@@ -46,7 +46,10 @@
                 @endif
 
                 @can('categories.view')
-                    <div class="rounded-lg bg-white p-6 shadow-sm">
+                    <a
+                        href="{{ route('admin.categories.index') }}"
+                        class="rounded-lg bg-white p-6 shadow-sm transition hover:shadow-md"
+                    >
                         <h3 class="text-lg font-semibold text-gray-900">
                             Categorías
                         </h3>
@@ -54,11 +57,14 @@
                         <p class="mt-2 text-sm text-gray-600">
                             Próximamente podrás organizar los productos mediante categorías y subcategorías.
                         </p>
-                    </div>
+                    </a>
                 @endcan
 
                 @can('products.view')
-                    <div class="rounded-lg bg-white p-6 shadow-sm">
+                    <a
+                        href="{{ route('admin.products.index') }}"
+                        class="rounded-lg bg-white p-6 shadow-sm transition hover:shadow-md"
+                    >
                         <h3 class="text-lg font-semibold text-gray-900">
                             Productos
                         </h3>
@@ -66,11 +72,14 @@
                         <p class="mt-2 text-sm text-gray-600">
                             Próximamente podrás administrar el catálogo de productos y sus datos generales.
                         </p>
-                    </div>
+                    </a>
                 @endcan
 
                 @can('attributes.view')
-                    <div class="rounded-lg bg-white p-6 shadow-sm">
+                    <a
+                        href="{{ route('admin.attributes.index') }}"
+                        class="rounded-lg bg-white p-6 shadow-sm transition hover:shadow-md"
+                    >
                         <h3 class="text-lg font-semibold text-gray-900">
                             Atributos
                         </h3>
@@ -78,7 +87,7 @@
                         <p class="mt-2 text-sm text-gray-600">
                             Aquí se definirán los campos configurables de cada tipo de producto.
                         </p>
-                    </div>
+                    </a>
                 @endcan
 
                 @can('content.view')

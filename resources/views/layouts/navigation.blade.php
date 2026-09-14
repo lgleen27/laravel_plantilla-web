@@ -25,6 +25,33 @@
                         </x-nav-link>
                     @endif
 
+                    @can('categories.view')
+                        <x-nav-link
+                            :href="route('admin.categories.index')"
+                            :active="request()->routeIs('admin.categories.*')"
+                        >
+                            Categorías
+                        </x-nav-link>
+                    @endcan
+
+                    @can('attributes.view')
+                        <x-nav-link
+                            :href="route('admin.attributes.index')"
+                            :active="request()->routeIs('admin.attributes.*')"
+                        >
+                            Atributos
+                        </x-nav-link>
+                    @endcan
+
+                    @can('products.view')
+                        <x-nav-link
+                            :href="route('admin.products.index')"
+                            :active="request()->routeIs('admin.products.*')"
+                        >
+                            Productos
+                        </x-nav-link>
+                    @endcan
+
                     @if (auth()->user()->hasRole('super-admin'))
                         <x-nav-link
                             :href="route('admin.users.index')"
@@ -97,6 +124,33 @@
                     Administración
                 </x-responsive-nav-link>
             @endif
+
+            @can('categories.view')
+                <x-responsive-nav-link
+                    :href="route('admin.categories.index')"
+                    :active="request()->routeIs('admin.categories.*')"
+                >
+                    Categorías
+                </x-responsive-nav-link>
+            @endcan
+
+            @can('attributes.view')
+                <x-responsive-nav-link
+                    :href="route('admin.attributes.index')"
+                    :active="request()->routeIs('admin.attributes.*')"
+                >
+                    Atributos
+                </x-responsive-nav-link>
+            @endcan
+
+            @can('products.view')
+                <x-responsive-nav-link
+                    :href="route('admin.products.index')"
+                    :active="request()->routeIs('admin.products.*')"
+                >
+                    Productos
+                </x-responsive-nav-link>
+            @endcan
 
             @if (auth()->user()->hasRole('super-admin'))
                 <x-responsive-nav-link
