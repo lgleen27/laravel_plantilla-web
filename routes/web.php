@@ -9,10 +9,12 @@ use App\Http\Controllers\Admin\AttributeOptionController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\VariantMediaController;
+use App\Http\Controllers\Public\CatalogController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Rutas públicas del catálogo
+Route::get('/', [CatalogController::class, 'index'])->name('public.home');
+Route::get('/catalogo', [CatalogController::class, 'catalog'])->name('public.catalog');
+Route::get('/catalogo/{product:slug}', [CatalogController::class, 'show'])->name('public.product.show');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

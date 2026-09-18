@@ -55,7 +55,7 @@
                         </h3>
 
                         <p class="mt-2 text-sm text-gray-600">
-                            Próximamente podrás organizar los productos mediante categorías y subcategorías.
+                            Crea Categorias Padres e hijos para clasificar los productos.
                         </p>
                     </a>
                 @endcan
@@ -70,7 +70,7 @@
                         </h3>
 
                         <p class="mt-2 text-sm text-gray-600">
-                            Próximamente podrás administrar el catálogo de productos y sus datos generales.
+                            Crea y administra los productos disponibles en el catálogo, con todas sus variantes.
                         </p>
                     </a>
                 @endcan
