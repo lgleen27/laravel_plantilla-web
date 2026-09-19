@@ -11,6 +11,7 @@
                 <form
                     method="POST"
                     action="{{ route('admin.products.update', $product) }}"
+                    enctype="multipart/form-data"
                 >
                     @csrf
                     @method('PUT')

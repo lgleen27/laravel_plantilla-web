@@ -51,13 +51,115 @@ class Product extends Model
         ];
     }
 
+    /**
+     * Completa automáticamente los datos administrativos al crear un producto.
+     */
     protected static function booted(): void
     {
         static::creating(function (Product $product): void {
+            /*
+            * El slug se genera solo al crear. Si más adelante se edita
+            * el nombre, la URL pública permanece estable.
+            */
             if (blank($product->slug)) {
-                $product->slug = Str::slug($product->name);
+                $product->slug = static::generateUniqueSlug($product->name);
+            }
+
+            /*
+            * El catálogo público trabaja únicamente por cotización.
+            */
+            $product->is_quotable = true;
+
+            /*
+            * Valores que ya no se capturan en el formulario principal.
+            * No eliminamos las columnas todavía para no romper la demo,
+            * variantes o consultas existentes.
+            */
+            $product->short_description = null;
+            $product->price = null;
+            $product->compare_at_price = null;
+            $product->track_stock = false;
+            $product->stock = null;
+            $product->allow_backorder = true;
+            $product->seo_keywords = null;
+
+            if ($product->sort_order === null) {
+                $product->sort_order = static::nextSortOrder();
+            }
+
+            if (blank($product->seo_title)) {
+                $product->seo_title = static::generateSeoTitle($product);
+            }
+
+            if (blank($product->seo_description)) {
+                $product->seo_description = static::generateSeoDescription($product);
             }
         });
+    }
+    
+    /**
+     * Genera un slug único para el producto.
+     */
+    protected static function generateUniqueSlug(string $name): string
+    {
+        $baseSlug = Str::slug($name);
+
+        if ($baseSlug === '') {
+            $baseSlug = 'producto';
+        }
+
+        $slug = $baseSlug;
+        $counter = 1;
+
+        while (
+            static::withTrashed()
+                ->where('slug', $slug)
+                ->exists()
+        ) {
+            $counter++;
+
+            $slug = $baseSlug . '-' . $counter;
+        }
+
+        return $slug;
+    }
+
+    /**
+     * Obtiene el siguiente orden general del catálogo.
+     */
+    protected static function nextSortOrder(): int
+    {
+        $maxSortOrder = static::query()
+            ->max('sort_order');
+
+        return ((int) $maxSortOrder) + 1;
+    }
+
+    /**
+     * Genera el título SEO a partir del nombre del producto.
+     */
+    protected static function generateSeoTitle(Product $product): string
+    {
+        return Str::limit(
+            $product->name . ' | Mueblería Liz y Congela',
+            60,
+            ''
+        );
+    }
+
+    /**
+     * Genera una descripción SEO básica a partir del nombre
+     * y la descripción completa.
+     */
+    protected static function generateSeoDescription(Product $product): string
+    {
+        $text = $product->description ?: $product->name;
+
+        $text = strip_tags($text);
+        $text = preg_replace('/\s+/', ' ', $text);
+        $text = trim($text);
+
+        return Str::limit($text, 155, '');
     }
 
     public function categories(): BelongsToMany

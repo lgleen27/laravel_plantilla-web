@@ -41,24 +41,6 @@
     </div>
 
     <div>
-        <x-input-label for="slug" value="Slug para URL (opcional)" />
-
-        <x-text-input
-            id="slug"
-            name="slug"
-            type="text"
-            class="mt-1 block w-full"
-            value="{{ old('slug', $category->slug ?? '') }}"
-        />
-
-        <p class="mt-1 text-sm text-gray-500">
-            Si lo dejas vacío, se generará automáticamente a partir del nombre.
-        </p>
-
-        <x-input-error :messages="$errors->get('slug')" class="mt-2" />
-    </div>
-
-    <div>
         <x-input-label for="description" value="Descripción (opcional)" />
 
         <textarea
@@ -69,22 +51,6 @@
         >{{ old('description', $category->description ?? '') }}</textarea>
 
         <x-input-error :messages="$errors->get('description')" class="mt-2" />
-    </div>
-
-    <div>
-        <x-input-label for="sort_order" value="Orden de visualización" />
-
-        <x-text-input
-            id="sort_order"
-            name="sort_order"
-            type="number"
-            min="0"
-            class="mt-1 block w-full"
-            value="{{ old('sort_order', $category->sort_order ?? 0) }}"
-            required
-        />
-
-        <x-input-error :messages="$errors->get('sort_order')" class="mt-2" />
     </div>
 
     <div>

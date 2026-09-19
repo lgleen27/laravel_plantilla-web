@@ -33,9 +33,30 @@ class CategoryController extends Controller
         return view('admin.categories.create', compact('parentCategories'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
-        $validated = $this->validateCategory($request);
+        $validated = $request->validate([
+            'parent_id' => [
+                'nullable',
+                'integer',
+                'exists:categories,id',
+            ],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'description' => [
+                'nullable',
+                'string',
+            ],
+            'is_active' => [
+                'nullable',
+                'boolean',
+            ],
+        ]);
+
+        $validated['is_active'] = $request->boolean('is_active');
 
         Category::create($validated);
 
@@ -59,21 +80,35 @@ class CategoryController extends Controller
         return view('admin.categories.edit', compact('category', 'parentCategories'));
     }
 
-    public function update(Request $request, Category $category): RedirectResponse
+    public function update(Request $request, Category $category)
     {
-        $validated = $this->validateCategory($request, $category);
+        $validated = $request->validate([
+            'parent_id' => [
+                'nullable',
+                'integer',
+                'exists:categories,id',
+                function ($attribute, $value, $fail) use ($category) {
+                    if ((int) $value === (int) $category->id) {
+                        $fail('Una categoría no puede ser su propia categoría padre.');
+                    }
+                },
+            ],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'description' => [
+                'nullable',
+                'string',
+            ],
+            'is_active' => [
+                'nullable',
+                'boolean',
+            ],
+        ]);
 
-        if ($validated['parent_id'] !== null) {
-            $newParent = Category::find($validated['parent_id']);
-
-            if ($newParent && ($newParent->is($category) || $category->hasDescendant($newParent))) {
-                return back()
-                    ->withInput()
-                    ->withErrors([
-                        'parent_id' => 'No puedes seleccionar la categoría actual ni una de sus subcategorías como categoría padre.',
-                    ]);
-            }
-        }
+        $validated['is_active'] = $request->boolean('is_active');
 
         $category->update($validated);
 

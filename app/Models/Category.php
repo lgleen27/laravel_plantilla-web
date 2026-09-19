@@ -5,20 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 
 class Category extends Model
 {
     use HasFactory, SoftDeletes;
 
-    /**
-     * Campos permitidos para create() y update().
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'parent_id',
         'name',
@@ -28,11 +23,6 @@ class Category extends Model
         'sort_order',
     ];
 
-    /**
-     * Conversiones automáticas de tipo.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -42,15 +32,60 @@ class Category extends Model
     }
 
     /**
-     * Genera el slug si llega vacío al crear la categoría.
+     * Completa datos administrativos al crear una categoría.
      */
     protected static function booted(): void
     {
         static::creating(function (Category $category): void {
             if (blank($category->slug)) {
-                $category->slug = Str::slug($category->name);
+                $category->slug = static::generateUniqueSlug($category->name);
+            }
+
+            if ($category->sort_order === null) {
+                $category->sort_order = static::nextSortOrder(
+                    $category->parent_id
+                );
             }
         });
+    }
+
+    /**
+     * Genera un slug único para evitar conflictos de URL.
+     */
+    protected static function generateUniqueSlug(string $name): string
+    {
+        $baseSlug = Str::slug($name);
+
+        if ($baseSlug === '') {
+            $baseSlug = 'categoria';
+        }
+
+        $slug = $baseSlug;
+        $counter = 1;
+
+        while (
+            static::withTrashed()
+                ->where('slug', $slug)
+                ->exists()
+        ) {
+            $counter++;
+
+            $slug = $baseSlug . '-' . $counter;
+        }
+
+        return $slug;
+    }
+
+    /**
+     * Obtiene el siguiente orden disponible dentro del mismo padre.
+     */
+    protected static function nextSortOrder(?int $parentId): int
+    {
+        $maxSortOrder = static::query()
+            ->where('parent_id', $parentId)
+            ->max('sort_order');
+
+        return ((int) $maxSortOrder) + 1;
     }
 
     /**

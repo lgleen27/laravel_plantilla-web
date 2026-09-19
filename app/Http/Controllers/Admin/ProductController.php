@@ -11,8 +11,9 @@ use App\Models\Product;
 use App\Models\ProductAttributeValue;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
+use App\Models\ProductVariant;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -35,20 +36,69 @@ class ProductController extends Controller
     {
         $validated = $request->validated();
 
-        DB::transaction(function () use ($validated, $request): void {
-            $product = Product::create([
-                ...$this->productData($validated),
-                'created_by' => $request->user()->id,
-                'updated_by' => $request->user()->id,
-            ]);
+        /*
+        * Guardamos las rutas que lleguen a crearse. Si algo falla después
+        * de almacenar un archivo, podremos eliminarlas en el catch.
+        */
+        $storedPaths = [];
 
-            $this->syncCategories($product, $validated);
-            $this->syncAttributes($product, $validated);
-        });
+        try {
+            DB::transaction(function () use (
+                $validated,
+                $request,
+                &$storedPaths
+            ): void {
+                $product = Product::create([
+                    ...$this->productData($validated),
+                    'created_by' => $request->user()->id,
+                    'updated_by' => $request->user()->id,
+                ]);
+
+                $this->syncCategories($product, $validated);
+                $this->syncAttributes($product, $validated);
+
+                /*
+                * Fotografía principal del producto padre.
+                */
+                if ($request->hasFile('cover_image')) {
+                    $this->storeProductCover(
+                        $product,
+                        $request->file('cover_image'),
+                        $request->user()->id,
+                        $storedPaths,
+                    );
+                }
+
+                /*
+                * Variantes y sus fotografías.
+                */
+                $this->storeInitialVariants(
+                    $product,
+                    $validated['variants'] ?? [],
+                    $request,
+                    $storedPaths,
+                );
+            });
+        } catch (\Throwable $exception) {
+            /*
+            * Una transacción revierte registros SQL, pero no archivos.
+            * Por eso eliminamos del disco los archivos que se alcanzaron
+            * a guardar antes del error.
+            */
+            foreach ($storedPaths as $path) {
+                Storage::disk('public')->delete($path);
+            }
+
+            report($exception);
+
+            return back()
+                ->withInput()
+                ->with('error', 'No fue posible crear el producto. Intenta nuevamente.');
+        }
 
         return redirect()
             ->route('admin.products.index')
-            ->with('success', 'Producto creado correctamente.');
+            ->with('success', 'Producto creado correctamente con sus variantes e imágenes.');
     }
 
     public function edit(Product $product): View
@@ -115,36 +165,39 @@ class ProductController extends Controller
         return compact('categories', 'attributes');
     }
 
+    /**
+     * Datos recibidos desde el formulario simplificado.
+     *
+     * Los productos se manejan como catálogo de cotización:
+     * sin precio, sin inventario y con cotización habilitada.
+     */
     private function productData(array $validated): array
     {
         return [
             'name' => $validated['name'],
-            'slug' => blank($validated['slug'] ?? null)
-                ? Str::slug($validated['name'])
-                : Str::slug($validated['slug']),
-            'sku' => blank($validated['sku'] ?? null) ? null : $validated['sku'],
-            'short_description' => blank($validated['short_description'] ?? null)
+
+            'sku' => blank($validated['sku'] ?? null)
                 ? null
-                : $validated['short_description'],
+                : trim($validated['sku']),
+
+            'short_description' => null,
+
             'description' => blank($validated['description'] ?? null)
                 ? null
                 : $validated['description'],
-            'price' => $validated['price'] ?? null,
-            'compare_at_price' => $validated['compare_at_price'] ?? null,
-            'track_stock' => $validated['track_stock'],
-            'stock' => $validated['track_stock'] ? $validated['stock'] : null,
-            'allow_backorder' => $validated['allow_backorder'],
+
+            'price' => null,
+            'compare_at_price' => null,
+
+            'track_stock' => false,
+            'stock' => null,
+            'allow_backorder' => true,
+
             'status' => $validated['status'],
-            'is_featured' => $validated['is_featured'],
-            'is_quotable' => $validated['is_quotable'],
-            'sort_order' => $validated['sort_order'],
-            'seo_title' => blank($validated['seo_title'] ?? null)
-                ? null
-                : $validated['seo_title'],
-            'seo_description' => blank($validated['seo_description'] ?? null)
-                ? null
-                : $validated['seo_description'],
-            'seo_keywords' => $this->keywordsToArray($validated['seo_keywords'] ?? null),
+            'is_featured' => (bool) ($validated['is_featured'] ?? false),
+            'is_quotable' => true,
+
+            'seo_keywords' => null,
         ];
     }
 
@@ -162,26 +215,22 @@ class ProductController extends Controller
             ->all();
     }
 
+    /**
+     * Sincroniza una sola categoría para el producto.
+     *
+     * Se conserva category_product por compatibilidad con el catálogo actual,
+     * pero la interfaz administrativa solo permitirá seleccionar una categoría.
+     */
     private function syncCategories(Product $product, array $validated): void
     {
-        $categoryIds = collect($validated['categories'] ?? [])
-            ->map(fn ($id) => (int) $id)
-            ->unique()
-            ->values();
+        $categoryId = (int) $validated['category_id'];
 
-        $primaryCategoryId = $validated['primary_category_id'] ?? null;
-
-        $syncData = $categoryIds
-            ->mapWithKeys(fn ($categoryId) => [
-                $categoryId => [
-                    'is_primary' => $primaryCategoryId !== null
-                        && (int) $primaryCategoryId === $categoryId,
-                    'sort_order' => 0,
-                ],
-            ])
-            ->all();
-
-        $product->categories()->sync($syncData);
+        $product->categories()->sync([
+            $categoryId => [
+                'is_primary' => true,
+                'sort_order' => 1,
+            ],
+        ]);
     }
 
     private function syncAttributes(Product $product, array $validated): void
@@ -285,5 +334,114 @@ class ProductController extends Controller
         }
 
         return null;
+    }
+    
+    /**
+     * Guarda la imagen de portada del producto padre.
+     */
+    private function storeProductCover(
+        Product $product,
+        \Illuminate\Http\UploadedFile $image,
+        int $userId,
+        array &$storedPaths,
+    ): void {
+        $path = $image->store(
+            'products/' . $product->id . '/cover',
+            'public',
+        );
+
+        $storedPaths[] = $path;
+
+        $product->media()->create([
+            'collection' => 'cover',
+            'disk' => 'public',
+            'path' => $path,
+            'file_name' => $image->getClientOriginalName(),
+            'mime_type' => $image->getMimeType(),
+            'size' => $image->getSize(),
+            'alt_text' => $product->name,
+            'is_primary' => true,
+            'sort_order' => 1,
+            'created_by' => $userId,
+        ]);
+    }
+
+    /**
+     * Crea variantes iniciales y guarda las galerías de cada una.
+     */
+    private function storeInitialVariants(
+        Product $product,
+        array $variants,
+        \Illuminate\Http\Request $request,
+        array &$storedPaths,
+    ): void {
+        foreach ($variants as $index => $variantData) {
+            /*
+            * Seguridad adicional para ignorar elementos vacíos
+            * si el usuario agregó y eliminó una tarjeta en el navegador.
+            */
+            if (blank($variantData['name'] ?? null)) {
+                continue;
+            }
+
+            $variant = $product->variants()->create([
+                'name' => trim($variantData['name']),
+                'sku' => blank($variantData['sku'] ?? null)
+                    ? null
+                    : trim($variantData['sku']),
+                'price' => null,
+                'compare_at_price' => null,
+                'track_stock' => false,
+                'stock' => null,
+                'allow_backorder' => true,
+                'status' => $variantData['status'] ?? 'active',
+                'sort_order' => $index + 1,
+                'created_by' => $request->user()->id,
+                'updated_by' => $request->user()->id,
+            ]);
+
+            $images = $request->file("variants.{$index}.images", []);
+
+            $this->storeVariantImages(
+                $product,
+                $variant,
+                $images,
+                $request->user()->id,
+                $storedPaths,
+            );
+        }
+    }
+
+    /**
+     * Guarda una galería de fotografías para una variante.
+     */
+    private function storeVariantImages(
+        Product $product,
+        ProductVariant $variant,
+        array $images,
+        int $userId,
+        array &$storedPaths,
+    ): void {
+        foreach ($images as $imageIndex => $image) {
+            $path = $image->store(
+                'products/' . $product->id . '/variants/' . $variant->id,
+                'public',
+            );
+
+            $storedPaths[] = $path;
+
+            $variant->media()->create([
+                'collection' => 'gallery',
+                'disk' => 'public',
+                'path' => $path,
+                'file_name' => $image->getClientOriginalName(),
+                'mime_type' => $image->getMimeType(),
+                'size' => $image->getSize(),
+                'alt_text' => $product->name . ' - ' . $variant->name,
+                'is_primary' => $imageIndex === 0,
+                'sort_order' => $imageIndex + 1,
+                'created_by' => $userId,
+            ]);
+        }
     }
 }
