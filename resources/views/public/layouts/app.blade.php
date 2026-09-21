@@ -7,7 +7,11 @@
     <title>
         @yield('title', 'Catálogo') - Mueblería Liz y Congela
     </title>
-
+    <link
+        rel="icon"
+        type="image/jpeg"
+        href="{{ Storage::disk('public')->url('branding/MYLlogo.png') }}"
+    >
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -17,11 +21,22 @@
 <body>
     <header class="site-header">
         <div class="container header-inner">
-            <a href="{{ route('public.home') }}" class="brand">
-                <span class="brand-mark">❄</span>
-                <span>
-                    Liz y Congela
-                    <small>Mueblería y equipamiento</small>
+            <a
+                href="{{ route('public.home') }}"
+                class="brand brand-with-logo"
+                aria-label="Mueblería Liz y Congela - Inicio"
+            >
+                <span class="brand-logo-box">
+                    <img class="brand-logo"
+                        src="{{ Storage::disk('public')->url('branding/MYLlogo.png') }}"
+                        alt="Logo de Mueblería Liz"
+                        class="brand-logo"
+                    >
+                </span>
+
+                <span class="brand-text">
+                    <strong>Mueblería Liz y Congela</strong>
+                    <small>Equipamiento comercial y muebles para el hogar</small>
                 </span>
             </a>
 
@@ -57,13 +72,29 @@
     <footer id="contacto" class="site-footer">
         <div class="container">
             <div class="footer-grid">
-                <div>
-                    <h3>Liz y Congela</h3>
+                <div class="footer-brand">
+                    <a
+                        href="{{ route('public.home') }}"
+                        class="brand brand-with-logo"
+                        aria-label="Mueblería Liz y Congela - Inicio"
+                    >
+                        <span class="brand-logo-box">
+                            <img class="brand-logo"
+                                src="{{ Storage::disk('public')->url('branding/MYLlogo.png') }}"
+                                alt="Logo de Mueblería Liz"
+                                class="brand-logo"
+                            >
+                        </span>
+
+                        <span class="brand-text">
+                            <strong>Mueblería Liz y Congela</strong>
+                            <small>Equipamiento comercial y muebles para el hogar</small>
+                        </span>
+                    </a>
 
                     <p>
                         Con 10 años de experiencia, ayudamos a emprendedores y familias
-                        a encontrar productos funcionales, duraderos y adecuados para
-                        sus necesidades.
+                        a encontrar productos funcionales, duraderos y adecuados para sus necesidades.
                     </p>
 
                     <p>
@@ -71,7 +102,9 @@
                     </p>
 
                     <p>
-                        <strong>Todo para tu negocio. Todo para tu hogar. Todo en un solo lugar.</strong>
+                        <strong>
+                            Todo para tu negocio. Todo para tu hogar. Todo en un solo lugar.
+                        </strong>
                     </p>
                 </div>
 

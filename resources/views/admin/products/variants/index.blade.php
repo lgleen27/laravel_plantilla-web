@@ -12,13 +12,6 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <a
-                    href="{{ route('admin.products.edit', $product) }}"
-                    class="text-sm font-medium text-gray-600 hover:text-gray-900"
-                >
-                    Volver al producto
-                </a>
-
                 @can('variants.create')
                     <a
                         href="{{ route('admin.products.variants.create', $product) }}"
@@ -45,16 +38,6 @@
                 </div>
             @endif
 
-            <div class="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
-                <p class="font-semibold">
-                    Fotografías por variante
-                </p>
-
-                <p class="mt-1">
-                    Cada variante tendrá su propia galería de imágenes. La carga de fotografías se habilitará en el siguiente módulo.
-                </p>
-            </div>
-
             <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                 <div class="overflow-x-auto p-6">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -70,10 +53,6 @@
 
                                 <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
                                     Precio
-                                </th>
-
-                                <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
-                                    Existencia
                                 </th>
 
                                 <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -111,19 +90,7 @@
                                         @if ($variant->price !== null)
                                             ${{ number_format((float) $variant->price, 2) }}
                                         @else
-                                            Se toma del producto
-                                        @endif
-                                    </td>
-
-                                    <td class="px-4 py-4 text-center text-sm text-gray-600">
-                                        @if (! $variant->track_stock)
-                                            No controlada
-                                        @elseif ($variant->stock > 0)
-                                            {{ $variant->stock }}
-                                        @elseif ($variant->allow_backorder)
-                                            Sin existencia, permite solicitar
-                                        @else
-                                            Sin existencia
+                                            Cotización
                                         @endif
                                     </td>
 

@@ -17,6 +17,8 @@
                 <form
                     method="POST"
                     action="{{ route('admin.products.variants.store', $product) }}"
+                    enctype="multipart/form-data"
+                    class="p-6 sm:p-8"
                 >
                     @include('admin.products.variants._form', [
                         'submitLabel' => 'Crear variante',

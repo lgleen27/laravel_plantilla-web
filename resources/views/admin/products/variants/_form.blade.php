@@ -1,14 +1,11 @@
 @csrf
 
 <div class="space-y-8">
+    {{-- Información de la variante --}}
     <section>
         <h3 class="text-lg font-semibold text-gray-900">
             Información de la variante
         </h3>
-
-        <p class="mt-1 text-sm text-gray-600">
-            La variante representa una diferencia real del producto, como color, tamaño, acabado o presentación.
-        </p>
 
         <div class="mt-4 grid gap-6 md:grid-cols-2">
             <div>
@@ -23,10 +20,6 @@
                     required
                     autofocus
                 />
-
-                <p class="mt-1 text-sm text-gray-500">
-                    Ejemplo: Color blanco, Presentación de 20 L o Tamaño grande.
-                </p>
 
                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
             </div>
@@ -60,169 +53,161 @@
             </div>
 
             <div>
-                <x-input-label for="slug" value="Slug para URL (opcional)" />
+                <x-input-label for="status" value="Estado de la variante" />
 
-                <x-text-input
-                    id="slug"
-                    name="slug"
-                    type="text"
-                    class="mt-1 block w-full"
-                    value="{{ old('slug', $variant->slug ?? '') }}"
-                />
+                <select
+                    id="status"
+                    name="status"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    required
+                >
+                    <option value="active" @selected(old('status', $variant->status ?? 'active') === 'active')>
+                        Activa
+                    </option>
 
-                <p class="mt-1 text-sm text-gray-500">
-                    Si lo dejas vacío, se generará desde el nombre.
-                </p>
+                    <option value="inactive" @selected(old('status', $variant->status ?? 'active') === 'inactive')>
+                        Inactiva
+                    </option>
+                </select>
 
-                <x-input-error :messages="$errors->get('slug')" class="mt-2" />
+                <x-input-error :messages="$errors->get('status')" class="mt-2" />
             </div>
         </div>
     </section>
 
+    {{-- Precio --}}
     <section class="border-t border-gray-200 pt-8">
         <h3 class="text-lg font-semibold text-gray-900">
-            Precio y existencias
-        </h3>
-
-        <div class="mt-4 grid gap-6 md:grid-cols-2">
-            <div>
-                <x-input-label for="price" value="Precio propio (opcional)" />
-
-                <x-text-input
-                    id="price"
-                    name="price"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    class="mt-1 block w-full"
-                    value="{{ old('price', $variant->price ?? '') }}"
-                />
-
-                <p class="mt-1 text-sm text-gray-500">
-                    Si lo dejas vacío, posteriormente se podrá tomar el precio general del producto.
-                </p>
-
-                <x-input-error :messages="$errors->get('price')" class="mt-2" />
-            </div>
-
-            <div>
-                <x-input-label for="compare_at_price" value="Precio anterior o de referencia (opcional)" />
-
-                <x-text-input
-                    id="compare_at_price"
-                    name="compare_at_price"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    class="mt-1 block w-full"
-                    value="{{ old('compare_at_price', $variant->compare_at_price ?? '') }}"
-                />
-
-                <x-input-error :messages="$errors->get('compare_at_price')" class="mt-2" />
-            </div>
-
-            <div>
-                <x-input-label for="track_stock" value="¿Controlar existencias?" />
-
-                <select
-                    id="track_stock"
-                    name="track_stock"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    required
-                >
-                    <option value="0" @selected((int) old('track_stock', $variant->track_stock ?? 0) === 0)>
-                        No
-                    </option>
-                    <option value="1" @selected((int) old('track_stock', $variant->track_stock ?? 0) === 1)>
-                        Sí
-                    </option>
-                </select>
-
-                <x-input-error :messages="$errors->get('track_stock')" class="mt-2" />
-            </div>
-
-            <div>
-                <x-input-label for="stock" value="Existencia disponible" />
-
-                <x-text-input
-                    id="stock"
-                    name="stock"
-                    type="number"
-                    min="0"
-                    class="mt-1 block w-full"
-                    value="{{ old('stock', $variant->stock ?? '') }}"
-                />
-
-                <p class="mt-1 text-sm text-gray-500">
-                    Es obligatoria únicamente si activas el control de existencias.
-                </p>
-
-                <x-input-error :messages="$errors->get('stock')" class="mt-2" />
-            </div>
-
-            <div>
-                <x-input-label for="allow_backorder" value="¿Permitir solicitar sin existencias?" />
-
-                <select
-                    id="allow_backorder"
-                    name="allow_backorder"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    required
-                >
-                    <option value="0" @selected((int) old('allow_backorder', $variant->allow_backorder ?? 0) === 0)>
-                        No
-                    </option>
-                    <option value="1" @selected((int) old('allow_backorder', $variant->allow_backorder ?? 0) === 1)>
-                        Sí
-                    </option>
-                </select>
-
-                <x-input-error :messages="$errors->get('allow_backorder')" class="mt-2" />
-            </div>
-
-            <div>
-                <x-input-label for="sort_order" value="Orden de visualización" />
-
-                <x-text-input
-                    id="sort_order"
-                    name="sort_order"
-                    type="number"
-                    min="0"
-                    class="mt-1 block w-full"
-                    value="{{ old('sort_order', $variant->sort_order ?? 0) }}"
-                    required
-                />
-
-                <x-input-error :messages="$errors->get('sort_order')" class="mt-2" />
-            </div>
-        </div>
-    </section>
-
-    <section class="border-t border-gray-200 pt-8">
-        <h3 class="text-lg font-semibold text-gray-900">
-            Estado
+            Precio
         </h3>
 
         <div class="mt-4 max-w-md">
-            <x-input-label for="status" value="Disponibilidad de la variante" />
+            <x-input-label for="price" value="Precio propio (opcional)" />
 
-            <select
-                id="status"
-                name="status"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                required
-            >
-                <option value="active" @selected(old('status', $variant->status ?? 'active') === 'active')>
-                    Activa
-                </option>
-                <option value="inactive" @selected(old('status', $variant->status ?? 'active') === 'inactive')>
-                    Inactiva
-                </option>
-            </select>
+            <x-text-input
+                id="price"
+                name="price"
+                type="number"
+                min="0"
+                step="0.01"
+                class="mt-1 block w-full"
+                value="{{ old('price', $variant->price ?? '') }}"
+            />
 
-            <x-input-error :messages="$errors->get('status')" class="mt-2" />
+            <p class="mt-1 text-sm text-gray-500">
+                Si lo dejas vacío, se manejará por cotización.
+            </p>
+
+            <x-input-error :messages="$errors->get('price')" class="mt-2" />
         </div>
     </section>
+
+    {{-- Fotografías --}}
+    <section class="border-t border-gray-200 pt-8">
+        <h3 class="text-lg font-semibold text-gray-900">
+            Fotografías de la variante
+        </h3>
+
+        <p class="mt-1 text-sm text-gray-600">
+            Selecciona hasta 10 imágenes. La primera se asignará como principal.
+        </p>
+
+        @if (isset($variant) && $variant->media->isNotEmpty())
+            <div class="mb-6">
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-900">
+                            Fotografías actuales
+                        </h4>
+
+                    </div>
+
+                    <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
+                        {{ $variant->media->count() }} imágenes
+                    </span>
+                </div>
+
+                <div class="mt-4 flex flex-wrap gap-3">
+                    @foreach ($variant->media as $image)
+                        <div
+                            class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm"
+                            style="width: 110px;"
+                        >
+                            <img
+                                src="{{ Storage::disk($image->disk)->url($image->path) }}"
+                                alt="{{ $image->alt_text ?: $product->name . ' - ' . $variant->name }}"
+                                class="block bg-gray-100 object-contain p-1"
+                                style="width: 110px; height: 90px;"
+                            >
+
+                            <div class="px-2 py-2">
+                                @if ($image->is_primary)
+                                    <span class="text-[11px] font-semibold text-green-700">
+                                        Imagen principal
+                                    </span>
+                                @else
+                                    <span class="text-[11px] text-gray-500">
+                                        Imagen secundaria
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
+        <div class="mt-5">
+            <x-input-label for="images" value="Selecciona las imágenes" />
+
+            <input
+                id="images"
+                name="images[]"
+                type="file"
+                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                multiple
+                class="mt-1 block w-full rounded-md border border-gray-300 bg-white p-2 text-sm text-gray-700"
+            >
+
+            <p class="mt-2 text-sm text-gray-500">
+                Formatos permitidos: JPG, JPEG, PNG y WebP. Máximo 5 MB por archivo.
+            </p>
+
+            <x-input-error :messages="$errors->get('images')" class="mt-2" />
+            <x-input-error :messages="$errors->get('images.*')" class="mt-2" />
+        </div>
+
+        {{-- Miniaturas de archivos seleccionados --}}
+        <div
+            id="imagesPreview"
+            class="mt-5 hidden"
+            style="
+                display: none;
+                flex-wrap: wrap;
+                align-items: flex-start;
+                gap: 12px;
+            "
+        ></div>
+    </section>
+
+    {{-- Valores requeridos por el backend actual --}}
+    <input
+        type="hidden"
+        name="track_stock"
+        value="{{ old('track_stock', $variant->track_stock ?? 0) }}"
+    >
+
+    <input
+        type="hidden"
+        name="allow_backorder"
+        value="{{ old('allow_backorder', $variant->allow_backorder ?? 1) }}"
+    >
+
+    <input
+        type="hidden"
+        name="sort_order"
+        value="{{ old('sort_order', $variant->sort_order ?? 0) }}"
+    >
 
     <div class="flex items-center gap-4 border-t border-gray-200 pt-8">
         <x-primary-button>
@@ -237,3 +222,100 @@
         </a>
     </div>
 </div>
+
+@if (! isset($variant))
+    <script>
+        (() => {
+            const initializeImagePreviews = () => {
+                const input = document.getElementById('images');
+                const preview = document.getElementById('imagesPreview');
+
+                if (!input || !preview || input.dataset.previewInitialized === 'true') {
+                    return;
+                }
+
+                input.dataset.previewInitialized = 'true';
+
+                let objectUrls = [];
+
+                const clearPreview = () => {
+                    objectUrls.forEach((url) => URL.revokeObjectURL(url));
+                    objectUrls = [];
+
+                    preview.replaceChildren();
+                    preview.style.display = 'none';
+                };
+
+                input.addEventListener('change', () => {
+                    clearPreview();
+
+                    const files = Array.from(input.files).slice(0, 10);
+
+                    if (files.length === 0) {
+                        return;
+                    }
+
+                    const fragment = document.createDocumentFragment();
+
+                    files.forEach((file, index) => {
+                        const objectUrl = URL.createObjectURL(file);
+                        objectUrls.push(objectUrl);
+
+                        const card = document.createElement('figure');
+
+                        card.style.margin = '0';
+                        card.style.width = '110px';
+                        card.style.overflow = 'hidden';
+                        card.style.border = '1px solid #d1d5db';
+                        card.style.borderRadius = '8px';
+                        card.style.background = '#ffffff';
+                        card.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
+
+                        const image = document.createElement('img');
+
+                        image.src = objectUrl;
+                        image.alt = `Vista previa ${index + 1}`;
+                        image.style.display = 'block';
+                        image.style.width = '110px';
+                        image.style.height = '90px';
+                        image.style.padding = '4px';
+                        image.style.background = '#f3f4f6';
+                        image.style.objectFit = 'contain';
+
+                        const caption = document.createElement('figcaption');
+
+                        caption.style.padding = '6px';
+                        caption.style.fontSize = '11px';
+                        caption.style.lineHeight = '1.25';
+                        caption.style.color = '#4b5563';
+                        caption.style.whiteSpace = 'nowrap';
+                        caption.style.overflow = 'hidden';
+                        caption.style.textOverflow = 'ellipsis';
+
+                        caption.textContent = index === 0
+                            ? 'Imagen principal'
+                            : `Imagen ${index + 1}`;
+
+                        card.append(image, caption);
+                        fragment.appendChild(card);
+                    });
+
+                    preview.appendChild(fragment);
+                    preview.style.display = 'flex';
+                });
+
+                window.addEventListener('beforeunload', clearPreview);
+            };
+
+            /*
+             * Funciona tanto si el HTML ya cargó como si Blade inserta
+             * el script antes de que termine de dibujar la página.
+             */
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initializeImagePreviews);
+            } else {
+                initializeImagePreviews();
+            }
+        })();
+    </script>
+@endif

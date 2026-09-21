@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Productos
+                Publicaciones
             </h2>
 
             @can('products.create')
@@ -10,7 +10,7 @@
                     href="{{ route('admin.products.create') }}"
                     class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-black hover:bg-indigo-500"
                 >
-                    Crear producto
+                    Crear publicación
                 </a>
             @endcan
         </div>
@@ -36,7 +36,7 @@
                         <thead>
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                    Producto
+                                    Publicaciones
                                 </th>
 
                                 <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -140,7 +140,7 @@
                                                 action="{{ route('admin.products.destroy', $product) }}"
                                                 method="POST"
                                                 class="inline"
-                                                onsubmit="return confirm('¿Deseas eliminar este producto?');"
+                                                onsubmit="return confirm('¿Deseas eliminar esta publicación?');"
                                             >
                                                 @csrf
                                                 @method('DELETE')
@@ -158,7 +158,7 @@
                             @empty
                                 <tr>
                                     <td colspan="6" class="px-4 py-8 text-center text-sm text-gray-500">
-                                        No hay productos registrados.
+                                        No hay publicaciones registradas.
                                     </td>
                                 </tr>
                             @endforelse

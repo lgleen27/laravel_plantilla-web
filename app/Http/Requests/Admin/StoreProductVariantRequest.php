@@ -15,19 +15,26 @@ class StoreProductVariantRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:180'],
+            'name' => [
+                'required',
+                'string',
+                'max:180',
+            ],
+
             'slug' => [
                 'nullable',
                 'string',
                 'max:220',
                 Rule::unique('product_variants', 'slug')->withoutTrashed(),
             ],
+
             'sku' => [
                 'nullable',
                 'string',
                 'max:120',
                 Rule::unique('product_variants', 'sku')->withoutTrashed(),
             ],
+
             'barcode' => [
                 'nullable',
                 'string',
@@ -35,15 +42,60 @@ class StoreProductVariantRequest extends FormRequest
                 Rule::unique('product_variants', 'barcode')->withoutTrashed(),
             ],
 
-            'price' => ['nullable', 'numeric', 'min:0'],
-            'compare_at_price' => ['nullable', 'numeric', 'min:0'],
+            'price' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
 
-            'track_stock' => ['required', 'boolean'],
-            'stock' => ['nullable', 'integer', 'min:0'],
-            'allow_backorder' => ['required', 'boolean'],
+            'compare_at_price' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
 
-            'status' => ['required', Rule::in(['active', 'inactive'])],
-            'sort_order' => ['required', 'integer', 'min:0', 'max:999999'],
+            'track_stock' => [
+                'required',
+                'boolean',
+            ],
+
+            'stock' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+
+            'allow_backorder' => [
+                'required',
+                'boolean',
+            ],
+
+            'status' => [
+                'required',
+                Rule::in(['active', 'inactive']),
+            ],
+
+            'sort_order' => [
+                'required',
+                'integer',
+                'min:0',
+                'max:999999',
+            ],
+
+            /*
+             * Nuevas imágenes iniciales de la variante.
+             */
+            'images' => [
+                'nullable',
+                'array',
+                'max:10',
+            ],
+
+            'images.*' => [
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:5120',
+            ],
         ];
     }
 
@@ -58,6 +110,16 @@ class StoreProductVariantRequest extends FormRequest
                     );
                 }
             },
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'images.max' => 'Puedes seleccionar un máximo de 10 imágenes por variante.',
+            'images.*.image' => 'Cada archivo debe ser una imagen válida.',
+            'images.*.mimes' => 'Las imágenes deben ser JPG, JPEG, PNG o WebP.',
+            'images.*.max' => 'Cada imagen puede pesar como máximo 5 MB.',
         ];
     }
 }

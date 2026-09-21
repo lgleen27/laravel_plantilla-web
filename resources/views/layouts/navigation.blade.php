@@ -48,7 +48,7 @@
                             :href="route('admin.products.index')"
                             :active="request()->routeIs('admin.products.*')"
                         >
-                            Productos
+                            Publicaciones
                         </x-nav-link>
                     @endcan
 
@@ -148,7 +148,7 @@
                     :href="route('admin.products.index')"
                     :active="request()->routeIs('admin.products.*')"
                 >
-                    Productos
+                    Publicaciones
                 </x-responsive-nav-link>
             @endcan
 

@@ -1556,3 +1556,98 @@ select {
         width: min(100% - 24px, 1180px);
     }
 }
+
+/* Logo oficial de Mueblería Liz */
+
+.brand-with-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.brand-logo-box {
+    display: flex;
+    width: 60px;
+    height: 60px;
+    flex: 0 0 60px;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.brand-logo {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.brand-text strong {
+    color: #ffffff;
+    font-size: 0.98rem;
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+.brand-text small {
+    color: #bae6fd;
+    font-size: 0.68rem;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+/* Footer */
+
+.footer-brand {
+    max-width: 560px;
+}
+
+.footer-logo-box {
+    display: flex;
+    width: 76px;
+    height: 76px;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 18px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.footer-logo {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+@media (max-width: 680px) {
+    .brand-logo-box {
+        width: 46px;
+        height: 46px;
+        flex-basis: 46px;
+    }
+
+    .brand-text strong {
+        font-size: 0.86rem;
+    }
+
+    .brand-text small {
+        font-size: 0.61rem;
+    }
+
+    .footer-logo-box {
+        width: 68px;
+        height: 68px;
+    }
+}
