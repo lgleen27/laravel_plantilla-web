@@ -13,6 +13,31 @@
 
     <div class="py-12">
         <div class="mx-auto max-w-4xl sm:px-6 lg:px-8">
+            @if (session('success'))
+                <div class="mb-6 rounded-md bg-green-100 p-4 text-green-800">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="mb-6 rounded-md border border-red-200 bg-red-50 p-4 text-red-800">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            @if ($errors->any())
+                <div class="mb-6 rounded-md border border-red-200 bg-red-50 p-4 text-red-800">
+                    <p class="font-semibold">
+                        No se pudieron guardar los cambios:
+                    </p>
+
+                    <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             <div class="bg-white p-6 shadow-sm sm:rounded-lg">
                 <form
                     method="POST"

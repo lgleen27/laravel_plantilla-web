@@ -190,25 +190,6 @@
         ></div>
     </section>
 
-    {{-- Valores requeridos por el backend actual --}}
-    <input
-        type="hidden"
-        name="track_stock"
-        value="{{ old('track_stock', $variant->track_stock ?? 0) }}"
-    >
-
-    <input
-        type="hidden"
-        name="allow_backorder"
-        value="{{ old('allow_backorder', $variant->allow_backorder ?? 1) }}"
-    >
-
-    <input
-        type="hidden"
-        name="sort_order"
-        value="{{ old('sort_order', $variant->sort_order ?? 0) }}"
-    >
-
     <div class="flex items-center gap-4 border-t border-gray-200 pt-8">
         <x-primary-button>
             {{ $submitLabel }}

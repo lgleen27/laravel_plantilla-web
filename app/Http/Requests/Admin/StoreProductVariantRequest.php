@@ -54,32 +54,9 @@ class StoreProductVariantRequest extends FormRequest
                 'min:0',
             ],
 
-            'track_stock' => [
-                'required',
-                'boolean',
-            ],
-
-            'stock' => [
-                'nullable',
-                'integer',
-                'min:0',
-            ],
-
-            'allow_backorder' => [
-                'required',
-                'boolean',
-            ],
-
             'status' => [
                 'required',
                 Rule::in(['active', 'inactive']),
-            ],
-
-            'sort_order' => [
-                'required',
-                'integer',
-                'min:0',
-                'max:999999',
             ],
 
             /*
@@ -96,20 +73,6 @@ class StoreProductVariantRequest extends FormRequest
                 'mimes:jpg,jpeg,png,webp',
                 'max:5120',
             ],
-        ];
-    }
-
-    public function after(): array
-    {
-        return [
-            function ($validator): void {
-                if ($this->boolean('track_stock') && $this->input('stock') === null) {
-                    $validator->errors()->add(
-                        'stock',
-                        'La existencia es obligatoria cuando el control de existencias está activo.'
-                    );
-                }
-            },
         ];
     }
 

@@ -204,22 +204,37 @@ class ProductVariantController extends Controller
         }
     }
 
+    /**
+     * Datos simplificados de una variante.
+     *
+     * Las variantes se manejan como catálogo de cotización:
+     * sin precio obligatorio, sin existencias y con orden automático.
+     */
     private function variantData(array $validated): array
     {
         return [
-            'name' => $validated['name'],
-            'slug' => blank($validated['slug'] ?? null)
-                ? Str::slug($validated['name'])
-                : Str::slug($validated['slug']),
-            'sku' => blank($validated['sku'] ?? null) ? null : $validated['sku'],
-            'barcode' => blank($validated['barcode'] ?? null) ? null : $validated['barcode'],
+            'name' => trim($validated['name']),
+
+            'sku' => blank($validated['sku'] ?? null)
+                ? null
+                : trim($validated['sku']),
+
+            'barcode' => blank($validated['barcode'] ?? null)
+                ? null
+                : trim($validated['barcode']),
+
+            /*
+            * No permitimos edición manual de slug desde el formulario.
+            * El modelo genera el slug al crear; al editar se conserva.
+            */
             'price' => $validated['price'] ?? null,
-            'compare_at_price' => $validated['compare_at_price'] ?? null,
-            'track_stock' => $validated['track_stock'],
-            'stock' => $validated['track_stock'] ? $validated['stock'] : null,
-            'allow_backorder' => $validated['allow_backorder'],
+            'compare_at_price' => null,
+
+            'track_stock' => false,
+            'stock' => null,
+            'allow_backorder' => true,
+
             'status' => $validated['status'],
-            'sort_order' => $validated['sort_order'],
         ];
     }
 

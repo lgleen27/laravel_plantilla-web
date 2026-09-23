@@ -17,15 +17,12 @@ class UpdateProductVariantRequest extends FormRequest
         $variant = $this->route('variant');
 
         return [
-            'name' => ['required', 'string', 'max:180'],
-            'slug' => [
-                'nullable',
+            'name' => [
+                'required',
                 'string',
-                'max:220',
-                Rule::unique('product_variants', 'slug')
-                    ->withoutTrashed()
-                    ->ignore($variant),
+                'max:180',
             ],
+
             'sku' => [
                 'nullable',
                 'string',
@@ -34,6 +31,7 @@ class UpdateProductVariantRequest extends FormRequest
                     ->withoutTrashed()
                     ->ignore($variant),
             ],
+
             'barcode' => [
                 'nullable',
                 'string',
@@ -43,29 +41,42 @@ class UpdateProductVariantRequest extends FormRequest
                     ->ignore($variant),
             ],
 
-            'price' => ['nullable', 'numeric', 'min:0'],
-            'compare_at_price' => ['nullable', 'numeric', 'min:0'],
+            'price' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
 
-            'track_stock' => ['required', 'boolean'],
-            'stock' => ['nullable', 'integer', 'min:0'],
-            'allow_backorder' => ['required', 'boolean'],
+            'status' => [
+                'required',
+                Rule::in(['active', 'inactive']),
+            ],
 
-            'status' => ['required', Rule::in(['active', 'inactive'])],
-            'sort_order' => ['required', 'integer', 'min:0', 'max:999999'],
+
+            /*
+             * Nuevas imágenes opcionales.
+             */
+            'images' => [
+                'nullable',
+                'array',
+                'max:10',
+            ],
+
+            'images.*' => [
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:5120',
+            ],
         ];
     }
 
-    public function after(): array
+    public function messages(): array
     {
         return [
-            function ($validator): void {
-                if ($this->boolean('track_stock') && $this->input('stock') === null) {
-                    $validator->errors()->add(
-                        'stock',
-                        'La existencia es obligatoria cuando el control de existencias está activo.'
-                    );
-                }
-            },
+            'images.max' => 'Puedes seleccionar un máximo de 10 imágenes por carga.',
+            'images.*.image' => 'Cada archivo debe ser una imagen válida.',
+            'images.*.mimes' => 'Las imágenes deben ser JPG, JPEG, PNG o WebP.',
+            'images.*.max' => 'Cada imagen puede pesar como máximo 5 MB.',
         ];
     }
 }
