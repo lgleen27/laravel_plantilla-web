@@ -27,6 +27,7 @@ class Product extends Model
         'allow_backorder',
         'status',
         'is_featured',
+        'featured_sort_order',
         'is_quotable',
         'sort_order',
         'seo_title',

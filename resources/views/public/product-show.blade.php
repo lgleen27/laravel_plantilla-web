@@ -181,7 +181,7 @@
                                         class="variant-option"
                                         data-variant-id="{{ $variant->id }}"
                                         data-variant-name="{{ $variant->name ?: $variant->sku }}"
-                                        data-variant-sku="{{ $variant->sku ?: 'No especificado' }}"
+                                        data-variant-sku="{{ $variant->sku ?: $product->sku ?: 'No especificado' }}"
                                         data-variant-price="{{ $variantPrice }}"
                                         data-variant-has-price="{{ $variantHasPrice ? 'true' : 'false' }}"
                                         data-variant-available="{{ $variantAvailable ? 'true' : 'false' }}"

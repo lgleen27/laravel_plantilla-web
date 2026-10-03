@@ -126,15 +126,6 @@
                                             </a>
                                         @endcan
 
-                                        @can('variants.view')
-                                            <a
-                                                href="{{ route('admin.products.variants.index', $product) }}"
-                                                class="mr-3 font-medium text-purple-600 hover:text-purple-900"
-                                            >
-                                                Variantes
-                                            </a>
-                                        @endcan
-
                                         @can('products.delete')
                                             <form
                                                 action="{{ route('admin.products.destroy', $product) }}"

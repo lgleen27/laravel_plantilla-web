@@ -7,7 +7,6 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\AttributeOptionController;
 use App\Http\Controllers\Admin\ProductController;
-use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\VariantMediaController;
 use App\Http\Controllers\Public\CatalogController;
 
@@ -99,6 +98,12 @@ Route::middleware(['auth', 'role:super-admin|admin|editor|viewer'])
             ->middleware('permission:products.view')
             ->name('products.index');
 
+        Route::get('products/featured/order', [\App\Http\Controllers\Admin\FeaturedProductController::class, 'index'])
+            ->name('products.featured.index');
+            
+        Route::post('products/featured/order', [\App\Http\Controllers\Admin\FeaturedProductController::class, 'update'])
+            ->name('products.featured.update');
+
         Route::get('products/create', [ProductController::class, 'create'])
             ->middleware('permission:products.create')
             ->name('products.create');
@@ -118,46 +123,6 @@ Route::middleware(['auth', 'role:super-admin|admin|editor|viewer'])
         Route::delete('products/{product}', [ProductController::class, 'destroy'])
             ->middleware('permission:products.delete')
             ->name('products.destroy');
-
-        Route::get('products/{product}/variants', [ProductVariantController::class, 'index'])
-            ->middleware('permission:variants.view')
-            ->name('products.variants.index');
-
-        Route::get('products/{product}/variants/create', [ProductVariantController::class, 'create'])
-            ->middleware('permission:variants.create')
-            ->name('products.variants.create');
-
-        Route::post('products/{product}/variants', [ProductVariantController::class, 'store'])
-            ->middleware('permission:variants.create')
-            ->name('products.variants.store');
-
-        Route::get('products/{product}/variants/{variant}/edit', [ProductVariantController::class, 'edit'])
-            ->middleware('permission:variants.update')
-            ->name('products.variants.edit');
-
-        Route::put('products/{product}/variants/{variant}', [ProductVariantController::class, 'update'])
-            ->middleware('permission:variants.update')
-            ->name('products.variants.update');
-
-        Route::delete('products/{product}/variants/{variant}', [ProductVariantController::class, 'destroy'])
-            ->middleware('permission:variants.delete')
-            ->name('products.variants.destroy');
-
-        Route::get('products/{product}/variants/{variant}/media', [VariantMediaController::class, 'index'])
-            ->middleware('permission:variants.view')
-            ->name('products.variants.media.index');
-
-        Route::post('products/{product}/variants/{variant}/media', [VariantMediaController::class, 'store'])
-            ->middleware('permission:variants.update')
-            ->name('products.variants.media.store');
-
-        Route::patch('products/{product}/variants/{variant}/media/{media}/primary', [VariantMediaController::class, 'makePrimary'])
-            ->middleware('permission:variants.update')
-            ->name('products.variants.media.primary');
-
-        Route::delete('products/{product}/variants/{variant}/media/{media}', [VariantMediaController::class, 'destroy'])
-            ->middleware('permission:variants.delete')
-            ->name('products.variants.media.destroy');
             
     });
     

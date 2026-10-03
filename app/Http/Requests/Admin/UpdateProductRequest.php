@@ -12,84 +12,34 @@ class UpdateProductRequest extends FormRequest
         return $this->user()?->can('products.update') ?? false;
     }
 
-    public function rules(): array
+        public function rules(): array
     {
         $product = $this->route('product');
-
         return [
-            'name' => [
-                'required',
-                'string',
-                'max:180',
-            ],
+            'name' => ['required', 'string', 'max:180'],
+            'sku' => ['nullable', 'string', 'max:120', Rule::unique('products', 'sku')->ignore($product)->withoutTrashed()],
+            'description' => ['nullable', 'string'],
+            'category_id' => ['required', 'integer', Rule::exists('categories', 'id')->withoutTrashed()],
+            'status' => ['required', Rule::in(['draft', 'active', 'inactive'])],
+            'is_featured' => ['required', 'boolean'],
 
-            'sku' => [
-                'nullable',
-                'string',
-                'max:120',
-                Rule::unique('products', 'sku')
-                    ->withoutTrashed()
-                    ->ignore($product),
-            ],
+            'delete_variants' => ['nullable', 'array'],
+            'delete_variants.*' => ['integer'],
+            'delete_media' => ['nullable', 'array'],
+            'delete_media.*' => ['integer'],
 
-            'description' => [
-                'nullable',
-                'string',
-            ],
+            'existing_variants' => ['nullable', 'array'],
+            'existing_variants.*.id' => ['required', 'integer'],
+            'existing_variants.*.name' => ['nullable', 'string', 'max:180'],
+            'existing_variants.*.sku' => ['nullable', 'string', 'max:120'],
+            'existing_variants.*.new_images' => ['nullable', 'array', 'max:10'],
+            'existing_variants.*.new_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:1024'],
 
-            /*
-             * Solo una categoría por producto.
-             */
-            'category_id' => [
-                'required',
-                'integer',
-                Rule::exists('categories', 'id')->withoutTrashed(),
-            ],
-
-            'status' => [
-                'required',
-                Rule::in(['draft', 'active', 'inactive']),
-            ],
-
-            'is_featured' => [
-                'required',
-                'boolean',
-            ],
-
-            /*
-             * Atributos configurables.
-             */
-            'attributes' => [
-                'nullable',
-                'array',
-            ],
-
-            'attributes.*.value_text' => [
-                'nullable',
-                'string',
-                'max:5000',
-            ],
-
-            'attributes.*.value_number' => [
-                'nullable',
-                'numeric',
-            ],
-
-            'attributes.*.value_boolean' => [
-                'nullable',
-                'boolean',
-            ],
-
-            'attributes.*.value_date' => [
-                'nullable',
-                'date',
-            ],
-
-            'attributes.*.attribute_option_id' => [
-                'nullable',
-                'integer',
-                Rule::exists('attribute_options', 'id'),
-            ],
+            'variants' => ['nullable', 'array', 'max:20'],
+            'variants.*.name' => ['nullable', 'string', 'max:180'],
+            'variants.*.sku' => ['nullable', 'string', 'max:120'],
+            'variants.*.images' => ['nullable', 'array', 'max:10'],
+            'variants.*.images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:1024'],
         ];
     }
 }

@@ -31,6 +31,7 @@ class CatalogController extends Controller
             ->where('is_featured', true)
             ->where('status', 'active')
             ->where('is_quotable', true)
+            ->orderBy('featured_sort_order', 'asc') 
             ->limit(6)
             ->get();
 

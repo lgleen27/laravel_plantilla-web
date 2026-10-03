@@ -48,7 +48,17 @@ class ProductVariant extends Model
     {
         static::creating(function (ProductVariant $variant): void {
             if (blank($variant->slug)) {
-                $variant->slug = Str::slug($variant->name);
+                $baseSlug = Str::slug($variant->name);
+                $slug = $baseSlug;
+                $count = 1;
+                
+                // Genera slugs únicos: unica, unica-1, unica-2, etc.
+                while (ProductVariant::where('slug', $slug)->withTrashed()->exists()) {
+                    $slug = $baseSlug . '-' . $count;
+                    $count++;
+                }
+                
+                $variant->slug = $slug;
             }
         });
     }
