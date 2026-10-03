@@ -75,20 +75,7 @@
                     </a>
                 @endcan
 
-                @can('attributes.view')
-                    <a
-                        href="{{ route('admin.attributes.index') }}"
-                        class="rounded-lg bg-white p-6 shadow-sm transition hover:shadow-md"
-                    >
-                        <h3 class="text-lg font-semibold text-gray-900">
-                            Atributos
-                        </h3>
 
-                        <p class="mt-2 text-sm text-gray-600">
-                            Aquí se definirán los campos configurables de cada tipo de producto.
-                        </p>
-                    </a>
-                @endcan
 
                 @can('content.view')
                     <div class="rounded-lg bg-white p-6 shadow-sm">

@@ -104,7 +104,7 @@ class CatalogController extends Controller
         $product->load([
             'categories',
             'brands',
-            'attributes.attribute.options',
+
             'variants' => function ($query) {
                 $query->where('status', 'active')
                     ->with([

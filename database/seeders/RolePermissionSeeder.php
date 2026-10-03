@@ -30,15 +30,7 @@ class RolePermissionSeeder extends Seeder
             'products.update',
             'products.delete',
 
-            'variants.view',
-            'variants.create',
-            'variants.update',
-            'variants.delete',
 
-            'attributes.view',
-            'attributes.create',
-            'attributes.update',
-            'attributes.delete',
 
             'content.view',
             'content.update',
@@ -69,15 +61,7 @@ class RolePermissionSeeder extends Seeder
             'products.update',
             'products.delete',
 
-            'variants.view',
-            'variants.create',
-            'variants.update',
-            'variants.delete',
 
-            'attributes.view',
-            'attributes.create',
-            'attributes.update',
-            'attributes.delete',
 
             'content.view',
             'content.update',
@@ -93,11 +77,7 @@ class RolePermissionSeeder extends Seeder
             'products.create',
             'products.update',
 
-            'variants.view',
-            'variants.create',
-            'variants.update',
 
-            'attributes.view',
 
             'content.view',
             'content.update',
@@ -108,8 +88,7 @@ class RolePermissionSeeder extends Seeder
         $viewer->syncPermissions([
             'categories.view',
             'products.view',
-            'variants.view',
-            'attributes.view',
+
             'content.view',
             'settings.view',
         ]);

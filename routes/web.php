@@ -4,10 +4,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\AttributeController;
-use App\Http\Controllers\Admin\AttributeOptionController;
+
 use App\Http\Controllers\Admin\ProductController;
-use App\Http\Controllers\Admin\VariantMediaController;
 use App\Http\Controllers\Public\CatalogController;
 
 // Rutas públicas del catálogo
@@ -58,41 +56,7 @@ Route::middleware(['auth', 'role:super-admin|admin|editor|viewer'])
             ->middleware('permission:categories.delete')
             ->name('categories.destroy');
 
-        Route::get('attributes', [AttributeController::class, 'index'])
-            ->middleware('permission:attributes.view')
-            ->name('attributes.index');
 
-        Route::get('attributes/create', [AttributeController::class, 'create'])
-            ->middleware('permission:attributes.create')
-            ->name('attributes.create');
-
-        Route::post('attributes', [AttributeController::class, 'store'])
-            ->middleware('permission:attributes.create')
-            ->name('attributes.store');
-
-        Route::get('attributes/{attribute}/edit', [AttributeController::class, 'edit'])
-            ->middleware('permission:attributes.update')
-            ->name('attributes.edit');
-
-        Route::put('attributes/{attribute}', [AttributeController::class, 'update'])
-            ->middleware('permission:attributes.update')
-            ->name('attributes.update');
-
-        Route::delete('attributes/{attribute}', [AttributeController::class, 'destroy'])
-            ->middleware('permission:attributes.delete')
-            ->name('attributes.destroy');
-
-        Route::post('attributes/{attribute}/options', [AttributeOptionController::class, 'store'])
-            ->middleware('permission:attributes.update')
-            ->name('attributes.options.store');
-
-        Route::put('attributes/{attribute}/options/{option}', [AttributeOptionController::class, 'update'])
-            ->middleware('permission:attributes.update')
-            ->name('attributes.options.update');
-
-        Route::delete('attributes/{attribute}/options/{option}', [AttributeOptionController::class, 'destroy'])
-            ->middleware('permission:attributes.delete')
-            ->name('attributes.options.destroy');
 
         Route::get('products', [ProductController::class, 'index'])
             ->middleware('permission:products.view')

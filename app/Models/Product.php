@@ -169,10 +169,7 @@ class Product extends Model
             ->withPivot(['is_primary', 'sort_order']);
     }
 
-    public function attributes(): HasMany
-    {
-        return $this->hasMany(ProductAttributeValue::class);
-    }
+
 
     public function primaryCategory(): BelongsToMany
     {

@@ -27,7 +27,7 @@
         $basePrice = $product->price;
         $hasBasePrice = $basePrice !== null && $basePrice > 0;
 
-        $attributeValues = $product->attributes;
+
     @endphp
 
     <section class="product-detail">
@@ -243,45 +243,7 @@
                 </section>
             @endif
 
-            @if($attributeValues->count())
-                <section class="product-specifications-section">
-                    <h2>Especificaciones</h2>
 
-                    <div class="specifications-grid">
-                        @foreach($attributeValues as $productAttributeValue)
-                            @php
-                                $attribute = $productAttributeValue->attribute;
-
-                                $value = $productAttributeValue->value
-                                    ?? $productAttributeValue->text_value
-                                    ?? $productAttributeValue->decimal_value
-                                    ?? $productAttributeValue->number_value
-                                    ?? null;
-
-                                if (is_array($value)) {
-                                    $value = implode(', ', $value);
-                                }
-
-                                if (is_bool($value)) {
-                                    $value = $value ? 'Sí' : 'No';
-                                }
-                            @endphp
-
-                            @if($attribute && filled($value))
-                                <div class="specification-item">
-                                    <span class="specification-label">
-                                        {{ $attribute->name }}
-                                    </span>
-
-                                    <span class="specification-value">
-                                        {{ $value }}
-                                    </span>
-                                </div>
-                            @endif
-                        @endforeach
-                    </div>
-                </section>
-            @endif
         </div>
     </section>
 @endsection
