@@ -5,55 +5,37 @@
 @section('content')
     @php
         $variants = $product->variants;
-
-        /*
-         * No seleccionamos una variante automáticamente.
-         * Si el producto tiene variantes, el visitante debe elegir una
-         * antes de poder cotizar.
-         */
         $initialVariant = null;
 
-        /*
-         * Para mostrar algo al cargar:
-         * - Si hay variantes, mostramos imágenes de la primera variante,
-         *   pero aún no se considera seleccionada para cotización.
-         * - Si no hay variantes, intentamos mostrar media del producto
-         *   si su relación media existe.
-         */
         $previewVariant = $variants->first();
         $previewImages = $previewVariant?->media ?? collect();
         $mainImage = $previewImages->first();
 
         $basePrice = $product->price;
         $hasBasePrice = $basePrice !== null && $basePrice > 0;
-
-
     @endphp
 
     <section class="product-detail">
         <div class="container">
             <nav class="breadcrumbs" aria-label="Ruta de navegación">
                 <a href="{{ route('public.home') }}">Inicio</a>
-
-                <span class="breadcrumb-separator">/</span>
+                <span class="breadcrumb-separator">❄</span>
 
                 <a href="{{ route('public.catalog') }}">Catálogo</a>
 
                 @if($product->primaryCategory)
-                    <span class="breadcrumb-separator">/</span>
-
+                    <span class="breadcrumb-separator">❄</span>
                     <a href="{{ route('public.catalog', ['category' => $product->primaryCategory->id]) }}">
                         {{ $product->primaryCategory->name }}
                     </a>
                 @endif
 
-                <span class="breadcrumb-separator">/</span>
-
+                <span class="breadcrumb-separator">❄</span>
                 <span>{{ $product->name }}</span>
             </nav>
 
             <div class="product-detail-grid">
-                {{-- Galería --}}
+                {{-- Galería de Imágenes --}}
                 <div class="product-gallery">
                     <div class="product-main-image">
                         @if($mainImage)
@@ -64,7 +46,7 @@
                             >
                         @else
                             <div id="productImagePlaceholder" class="product-image-placeholder">
-                                Sin imagen disponible
+                                ❄ Sin imagen disponible
                             </div>
                         @endif
                     </div>
@@ -91,11 +73,11 @@
                     </div>
                 </div>
 
-                {{-- Información --}}
+                {{-- Información del Producto --}}
                 <div class="product-info-card">
                     @if($product->primaryCategory)
                         <span class="product-detail-category">
-                            {{ $product->primaryCategory->name }}
+                            ❄ {{ $product->primaryCategory->name }}
                         </span>
                     @endif
 
@@ -111,17 +93,16 @@
 
                     <div class="product-meta-grid">
                         <div class="product-meta-item">
-                            <span class="product-meta-label">SKU</span>
+                            <span class="product-meta-label">SKU / Modelo</span>
                             <span id="productSku" class="product-meta-value">
                                 {{ $variants->count() ? 'Selecciona una variante' : ($product->sku ?: 'No especificado') }}
                             </span>
                         </div>
-
                     </div>
 
                     <div class="product-detail-price">
                         <span class="product-detail-price-label">
-                            {{ $variants->count() ? 'Precio de la variante' : 'Precio mostrado' }}
+                            {{ $variants->count() ? 'Precio de la variante' : 'Precio' }}
                         </span>
 
                         <span
@@ -133,7 +114,7 @@
                             @elseif($hasBasePrice)
                                 ${{ number_format($basePrice, 2) }}
                             @else
-                                Cotizar
+                                Cotizar por WhatsApp
                             @endif
                         </span>
 
@@ -151,6 +132,7 @@
 
                     @if($variants->count())
                         <section class="variant-section">
+                            <h2>Selecciona Modelo / Capacidad:</h2>
 
                             <div class="variant-list" id="variantList">
                                 @foreach($variants as $variant)
@@ -165,12 +147,6 @@
                                         $variantPrice = $variant->price ?? $product->price;
                                         $variantHasPrice = $variantPrice !== null && $variantPrice > 0;
 
-                                        /*
-                                         * Se usa la regla indicada:
-                                         * - Si controla stock: disponible cuando stock > 0
-                                         *   o allow_backorder es verdadero.
-                                         * - Si no controla stock: se considera cotizable/disponible.
-                                         */
                                         $variantAvailable = ! $variant->track_stock
                                             || $variant->stock > 0
                                             || $variant->allow_backorder;
@@ -196,7 +172,7 @@
 
                     @if($product->brands->count())
                         <section class="brand-section">
-                            <h2>Marca de interés <small>(opcional)</small></h2>
+                            <h2>Marca de interés <small style="font-weight: 400; opacity: 0.8;">(opcional)</small></h2>
 
                             <div class="brand-list" id="brandList">
                                 @foreach($product->brands as $brand)
@@ -219,31 +195,29 @@
                         class="quote-button"
                         {{ $variants->count() ? 'disabled' : '' }}
                     >
-                        <span>◉</span>
+                        <span>❄</span>
                         <span>Solicitar cotización por WhatsApp</span>
                     </button>
 
                     <p id="variantRequiredMessage" class="variant-required-message">
-                        {{ $variants->count() ? 'Selecciona una variante para continuar con la cotización.' : '' }}
+                        {{ $variants->count() ? 'Por favor selecciona una variante para continuar con tu cotización.' : '' }}
                     </p>
 
                     <p class="quote-note">
-                        La cotización se abrirá directamente en WhatsApp.
+                        Se abrirá una conversación en WhatsApp con los datos del producto seleccionado.
                     </p>
                 </div>
             </div>
 
             @if($product->description)
                 <section class="product-description-section">
-                    <h2>Descripción del producto</h2>
+                    <h2>Especificaciones y Descripción</h2>
 
                     <div class="product-long-description">
                         {!! nl2br(e($product->description)) !!}
                     </div>
                 </section>
             @endif
-
-
         </div>
     </section>
 @endsection
@@ -259,7 +233,7 @@
                 hasVariants: @json($variants->count() > 0),
             };
 
-            const whatsappNumber = '5210000000000';
+            const whatsappNumber = '5213781056303';
 
             const mainImage = document.getElementById('productMainImage');
             const imagePlaceholder = document.getElementById('productImagePlaceholder');
@@ -293,80 +267,63 @@
             };
 
             const setMainImage = (url, alt) => {
-            if (!url) {
-                return;
-            }
+                if (!url) return;
 
-            const currentImage = document.getElementById('productMainImage');
+                const currentImage = document.getElementById('productMainImage');
 
-            if (currentImage) {
-                if (currentImage.src === url) {
+                if (currentImage) {
+                    if (currentImage.src === url) return;
+
+                    currentImage.style.opacity = '0.5';
+
+                    window.requestAnimationFrame(() => {
+                        currentImage.src = url;
+                        currentImage.alt = alt;
+
+                        currentImage.onload = () => {
+                            currentImage.style.opacity = '1';
+                        };
+
+                        currentImage.onerror = () => {
+                            currentImage.style.opacity = '1';
+                        };
+                    });
+
                     return;
                 }
 
-                currentImage.style.opacity = '0.55';
+                if (imagePlaceholder) {
+                    imagePlaceholder.remove();
+                }
 
-                window.requestAnimationFrame(() => {
-                    currentImage.src = url;
-                    currentImage.alt = alt;
+                const gallery = document.querySelector('.product-main-image');
 
-                    currentImage.onload = () => {
-                        currentImage.style.opacity = '1';
-                    };
-
-                    currentImage.onerror = () => {
-                        currentImage.style.opacity = '1';
-                    };
-                });
-
-                return;
-            }
-
-            if (imagePlaceholder) {
-                imagePlaceholder.remove();
-            }
-
-            const gallery = document.querySelector('.product-main-image');
-
-            if (gallery) {
-                const newImage = document.createElement('img');
-
-                newImage.id = 'productMainImage';
-                newImage.src = url;
-                newImage.alt = alt;
-                newImage.decoding = 'async';
-
-                gallery.appendChild(newImage);
-            }
-        };
+                if (gallery) {
+                    const newImage = document.createElement('img');
+                    newImage.id = 'productMainImage';
+                    newImage.src = url;
+                    newImage.alt = alt;
+                    newImage.decoding = 'async';
+                    gallery.appendChild(newImage);
+                }
+            };
 
             let isChangingVariant = false;
             let currentVariantId = null;
 
             const activateThumbnail = (button) => {
-                if (!thumbnailsContainer) {
-                    return;
-                }
-
+                if (!thumbnailsContainer) return;
                 thumbnailsContainer.querySelectorAll('.product-thumbnail').forEach((thumbnail) => {
                     thumbnail.classList.remove('is-active');
                 });
-
                 button.classList.add('is-active');
             };
 
-            /*
-            * Delegación de eventos:
-            * solo se registra una vez sobre el contenedor.
-            * También funciona con miniaturas creadas después por renderThumbnails().
-            */
             if (thumbnailsContainer) {
                 thumbnailsContainer.addEventListener('click', (event) => {
                     const thumbnail = event.target.closest('.product-thumbnail');
 
-                    if (!thumbnail || !thumbnailsContainer.contains(thumbnail)) {
-                        return;
-                    }
+                    if (!thumbnail || !thumbnailsContainer.contains(thumbnail)) return;
 
                     setMainImage(
                         thumbnail.dataset.imageUrl,
@@ -378,9 +335,7 @@
             }
 
             const renderThumbnails = (images) => {
-                if (!thumbnailsContainer) {
-                    return;
-                }
+                if (!thumbnailsContainer) return;
 
                 const fragment = document.createDocumentFragment();
 
@@ -391,15 +346,11 @@
 
                 images.forEach((image, index) => {
                     const thumbnail = document.createElement('button');
-
                     thumbnail.type = 'button';
                     thumbnail.className = `product-thumbnail ${index === 0 ? 'is-active' : ''}`;
                     thumbnail.dataset.imageUrl = image.url;
                     thumbnail.dataset.imageAlt = image.alt;
-                    thumbnail.setAttribute(
-                        'aria-label',
-                        `Ver imagen ${index + 1} de ${product.name}`
-                    );
+                    thumbnail.setAttribute('aria-label', `Ver imagen ${index + 1} de ${product.name}`);
 
                     const imageElement = document.createElement('img');
                     imageElement.src = image.url;
@@ -416,12 +367,11 @@
 
             variantButtons.forEach((button) => {
                 button.addEventListener('click', () => {
-                    if (isChangingVariant || currentVariantId === button.dataset.variantId) {
-                        return;
-                    }
+                    if (isChangingVariant || currentVariantId === button.dataset.variantId) return;
 
                     isChangingVariant = true;
                     currentVariantId = button.dataset.variantId;
+
                     variantButtons.forEach((variantButton) => {
                         variantButton.classList.remove('is-selected');
                     });
@@ -451,13 +401,13 @@
                         priceElement.textContent = formatPrice(selectedVariant.price);
                         priceElement.className = 'product-detail-price-value';
                     } else {
-                        priceElement.textContent = 'Cotizar';
+                        priceElement.textContent = 'Cotizar por WhatsApp';
                         priceElement.className = 'product-detail-quote-value';
                     }
 
                     availabilityElement.textContent = selectedVariant.available
-                        ? 'Disponible para cotización'
-                        : 'Consultar disponibilidad';
+                        ? '✓ Disponible para cotización'
+                        : '✕ Consultar disponibilidad';
 
                     availabilityElement.classList.toggle(
                         'is-unavailable',
@@ -523,13 +473,13 @@
                     : product.sku;
 
                 const messageLines = [
-                    'Hola, me interesa solicitar una cotización.',
+                    '❄ Hola, me interesa solicitar una cotización.',
                     '',
                     `Producto: ${product.name}`,
                 ];
 
                 if (selectedVariant) {
-                    messageLines.push(`Variante: ${selectedVariant.name}`);
+                    messageLines.push(`Variante/Modelo: ${selectedVariant.name}`);
                 }
 
                 if (selectedBrand) {
@@ -543,7 +493,7 @@
                 );
 
                 const message = encodeURIComponent(messageLines.join('\n'));
-                const whatsappUrl = `https://wa.me/${5213781056303}?text=${message}`;
+                const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
                 window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
             });

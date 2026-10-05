@@ -1,15 +1,15 @@
 @extends('public.layouts.app')
 
-@section('title', 'Catálogo')
+@section('title', 'Catálogo de Refrigeración y Productos')
 
 @section('content')
     <section class="page-banner">
         <div class="container">
-            <h1>Catálogo de productos</h1>
+            <h1>Catálogo de Productos ❄</h1>
 
             <p>
-                Encuentra congeladores, refrigeradores, muebles y soluciones
-                para equipar tu negocio y transformar tu hogar.
+                Encuentra congeladores, refrigeradores comerciales, neveras y mobiliario 
+                para equipar tu negocio con la máxima eficiencia.
             </p>
         </div>
     </section>
@@ -24,7 +24,7 @@
                     <input type="text"
                            name="search"
                            value="{{ request('search') }}"
-                           placeholder="Buscar por nombre..."
+                           placeholder="Buscar producto o modelo..."
                            class="form-control">
 
                     <select name="category" class="form-control">
@@ -39,7 +39,7 @@
                     </select>
 
                     <button type="submit" class="filter-button">
-                        Buscar
+                        <span>🔍</span> Buscar
                     </button>
 
                     @if(request('search') || request('category'))
@@ -53,8 +53,7 @@
 
             @if($products->count())
                 <p class="results-count">
-                    <strong>{{ $products->total() }}</strong>
-                    productos encontrados
+                    Mostrando <strong>{{ $products->total() }}</strong> productos disponibles
                 </p>
 
                 <div class="product-grid">
@@ -69,16 +68,16 @@
 
                             $imageUrl = $firstImage
                                 ? \Storage::disk($firstImage->disk)->url($firstImage->path)
-                                : 'https://via.placeholder.com/600x450/e2e8f0/475569?text=Sin+Imagen';
+                                : 'https://via.placeholder.com/600x450/e0f2fe/0369a1?text=Sin+Imagen';
                         @endphp
 
                         <article class="product-card">
                             <a href="{{ route('public.product.show', $product->slug) }}">
                                 <div class="product-image">
-                                    <img src="{{ $imageUrl }}" alt="{{ $product->name }}">
+                                    <img src="{{ $imageUrl }}" alt="{{ $product->name }}" loading="lazy">
 
                                     @if($product->is_featured)
-                                        <span class="product-badge">Destacado</span>
+                                        <span class="product-badge">❄ Destacado</span>
                                     @endif
 
                                     @if(!$isAvailable)
@@ -88,7 +87,7 @@
 
                                 <div class="product-body">
                                     <p class="product-category">
-                                        {{ $product->primaryCategory?->name ?? 'Sin categoría' }}
+                                        {{ $product->primaryCategory?->name ?? 'Refrigeración' }}
                                     </p>
 
                                     <h2 class="product-title">
@@ -96,13 +95,13 @@
                                     </h2>
 
                                     <p class="product-description">
-                                        {{ $product->short_description }}
+                                        {{ $product->short_description ?: 'Equipo con alto rendimiento y durabilidad.' }}
                                     </p>
 
                                     <div class="product-footer">
                                         <div>
                                             <span class="price-label">
-                                                {{ $hasPrice ? 'Precio' : 'Disponibilidad' }}
+                                                {{ $hasPrice ? 'Precio desde' : 'Disponibilidad' }}
                                             </span>
 
                                             @if($hasPrice)
@@ -110,7 +109,7 @@
                                                     ${{ number_format($price, 2) }}
                                                 </span>
                                             @else
-                                                <span class="quote-price">Cotizar</span>
+                                                <span class="quote-price">Cotizar ❄</span>
                                             @endif
                                         </div>
 
@@ -118,7 +117,7 @@
                                             <span class="status-label">Estado</span>
 
                                             <span class="status {{ $isAvailable ? 'available' : 'unavailable' }}">
-                                                {{ $isAvailable ? 'Disponible' : 'Agotado' }}
+                                                {{ $isAvailable ? '✓ Disponible' : '✕ Agotado' }}
                                             </span>
                                         </div>
                                     </div>
@@ -132,7 +131,7 @@
                     <div class="pagination">
                         @if(!$products->onFirstPage())
                             <a href="{{ $products->previousPageUrl() }}">
-                                Anterior
+                                ← Anterior
                             </a>
                         @endif
 
@@ -146,16 +145,16 @@
 
                         @if($products->hasMorePages())
                             <a href="{{ $products->nextPageUrl() }}">
-                                Siguiente
+                                Siguiente →
                             </a>
                         @endif
                     </div>
                 @endif
             @else
-                <div class="section-heading">
-                    <h2>No encontramos productos</h2>
+                <div class="section-heading" style="padding: 40px 0;">
+                    <h2>No encontramos resultados ❄</h2>
                     <p>
-                        Intenta con otro término de búsqueda o selecciona otra categoría.
+                        Intenta con otro término de búsqueda o selecciona una categoría diferente.
                     </p>
 
                     <br>

@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>
-        @yield('title', 'Catálogo') - Mueblería Liz y Congela
+        @yield('title', 'Catálogo') - Refrigeración y Equipamiento Comercial | Mueblería Liz y Congela
     </title>
+    
+    <meta name="description" content="Especialistas en congeladores, refrigeradores comerciales, neveras y equipamiento para tu negocio y hogar. Envíos y atención personalizada desde Mexticacán, Jalisco.">
+    
     <link
         rel="icon"
         type="image/jpeg"
@@ -29,14 +32,13 @@
                 <span class="brand-logo-box">
                     <img class="brand-logo"
                         src="{{ Storage::disk('public')->url('branding/MYLlogo.png') }}"
-                        alt="Logo de Mueblería Liz"
-                        class="brand-logo"
+                        alt="Logo de Mueblería Liz y Congela"
                     >
                 </span>
 
                 <span class="brand-text">
-                    <strong>Mueblería Liz y Congela</strong>
-                    <small>Equipamiento comercial y muebles para el hogar</small>
+                    <strong>Mueblería Liz y Congela ❄</strong>
+                    <small>Refrigeración Comercial y Muebles para el Hogar</small>
                 </span>
             </a>
 
@@ -56,10 +58,13 @@
                 </a>
             </nav>
 
-            <a href="https://wa.me/5210000000000"
+            <a href="https://wa.me/5213781056303"
                target="_blank"
-               class="whatsapp-button">
-                <span>◉</span>
+               class="whatsapp-button"
+               rel="noopener noreferrer">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="28" height="28">
+                    <path fill="#ffffff" d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
+                </svg>
                 <span>WhatsApp</span>
             </a>
         </div>
@@ -81,45 +86,40 @@
                         <span class="brand-logo-box">
                             <img class="brand-logo"
                                 src="{{ Storage::disk('public')->url('branding/MYLlogo.png') }}"
-                                alt="Logo de Mueblería Liz"
-                                class="brand-logo"
+                                alt="Logo de Mueblería Liz y Congela"
                             >
                         </span>
 
                         <span class="brand-text">
-                            <strong>Mueblería Liz y Congela</strong>
-                            <small>Equipamiento comercial y muebles para el hogar</small>
+                            <strong>Mueblería Liz y Congela ❄</strong>
+                            <small>Soluciones en Congelación y Equipamiento Comercial</small>
                         </span>
                     </a>
 
                     <p>
-                        Con 10 años de experiencia, ayudamos a emprendedores y familias
-                        a encontrar productos funcionales, duraderos y adecuados para sus necesidades.
-                    </p>
-
-                    <p>
-                        Somos orgullosamente parte de “El Pueblo de los Paleteros”.
+                        Con más de 10 años de experiencia, brindamos soluciones de calidad en congeladores, 
+                        refrigeración comercial y mobiliario. Orgullosamente desde Mexticacán, Jalisco, "El Pueblo de los Paleteros".
                     </p>
 
                     <p>
                         <strong>
-                            Todo para tu negocio. Todo para tu hogar. Todo en un solo lugar.
+                            Equipa tu negocio con la mejor tecnología en frío.
                         </strong>
                     </p>
                 </div>
 
                 <div>
-                    <h3>Contacto</h3>
+                    <h3>Contacto y Atención</h3>
 
                     <ul>
-                        <li>+52 1 000 000 0000</li>
-                        <li>contacto@lizzycongela.com</li>
-                        <li>Mexticacán, Jalisco, México</li>
+                        <li>❄ Directo: +52 378 105 6303</li>
+                        <li>✉ contacto@lizzycongela.com</li>
+                        <li>📍 Mexticacán, Jalisco, México</li>
                     </ul>
                 </div>
 
                 <div>
-                    <h3>Horario</h3>
+                    <h3>Horario de Atención</h3>
 
                     <ul>
                         <li>Lunes a viernes: 9:00 AM - 6:00 PM</li>
@@ -131,17 +131,16 @@
 
             <div class="footer-bottom">
                 <span>
-                    © {{ date('Y') }} Mueblería Liz y Congela.
+                    © {{ date('Y') }} Mueblería Liz y Congela. Todos los derechos reservados.
                 </span>
 
                 <span>
-                    Equipa tu negocio y transforma tu hogar.
+                    ❄ Especialistas en Refrigeración Comercial y Congeladores
                 </span>
             </div>
         </div>
     </footer>
 
     @stack('scripts')
-    
 </body>
 </html>
