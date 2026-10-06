@@ -39,7 +39,7 @@
                     </select>
 
                     <button type="submit" class="filter-button">
-                        <span>🔍</span> Buscar
+                        Buscar
                     </button>
 
                     @if(request('search') || request('category'))
@@ -109,7 +109,7 @@
                                                     ${{ number_format($price, 2) }}
                                                 </span>
                                             @else
-                                                <span class="quote-price">Cotizar ❄</span>
+                                                <span class="quote-price">Cotizar</span>
                                             @endif
                                         </div>
 
