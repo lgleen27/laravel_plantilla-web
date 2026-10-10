@@ -29,7 +29,7 @@ class CatalogController extends Controller
             },
         ])
             ->where('is_featured', true)
-            ->where('status', 'active')
+            ->where('status', '!=', 'draft')
             ->where('is_quotable', true)
             ->orderBy('featured_sort_order', 'asc') 
             ->limit(6)
@@ -61,7 +61,7 @@ class CatalogController extends Controller
                     ]);
             },
         ])
-            ->where('status', 'active')
+            ->where('status', '!=', 'draft')
             ->where('is_quotable', true);
 
         // Búsqueda por nombre
@@ -97,7 +97,7 @@ class CatalogController extends Controller
     public function show(Product $product)
     {
         abort_if(
-            $product->status !== 'active' || ! $product->is_quotable,
+            $product->status === 'draft' || ! $product->is_quotable,
             404
         );
 

@@ -408,8 +408,8 @@
                     }
 
                     availabilityElement.textContent = selectedVariant.available
-                        ? '✓ Disponible para cotización'
-                        : '✕ Consultar disponibilidad';
+                        ? 'Disponible para cotización'
+                        : 'Consultar disponibilidad';
 
                     availabilityElement.classList.toggle(
                         'is-unavailable',

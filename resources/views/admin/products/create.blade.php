@@ -1,19 +1,14 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Crear publicación
-        </h2>
-    </x-slot>
+@extends('layouts.admin-layout')
 
-    <div class="py-12">
-        <div class="mx-auto max-w-5xl sm:px-6 lg:px-8">
-            <div class="bg-white p-6 shadow-sm sm:rounded-lg">
-                <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data">
-                    @include('admin.products._form', [
-                        'submitLabel' => 'Crear publicación',
-                    ])
-                </form>
-            </div>
-        </div>
-    </div>
-</x-app-layout>
+@section('title', 'Nuevo Producto')
+@section('header', 'Crear Nuevo Producto')
+
+@section('content')
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-5xl mx-auto">
+    <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data">
+        @include('admin.products._form', [
+            'submitLabel' => 'Guardar nuevo producto',
+        ])
+    </form>
+</div>
+@endsection

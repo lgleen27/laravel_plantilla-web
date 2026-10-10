@@ -14,14 +14,52 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
-    public function index(): View
+    public function index(\Illuminate\Http\Request $request): \Illuminate\View\View
     {
-        $products = Product::query()
-            ->with('categories')
-            ->orderByDesc('created_at')
-            ->paginate(15);
+        $search = $request->search;
 
-        return view('admin.products.index', compact('products'));
+        // 1. Productos Destacados (La nueva "Categoría")
+        $featuredProducts = \App\Models\Product::where('is_featured', true)
+            ->with('variants')
+            ->when($search, function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")->orWhere('sku', 'like', "%{$search}%");
+            })->orderBy('featured_sort_order')->get();
+
+        // 2. Categorías Normales
+        $categories = \App\Models\Category::with(['products' => function ($query) use ($search) {
+            if ($search) {
+                $query->where('name', 'like', "%{$search}%")->orWhere('sku', 'like', "%{$search}%");
+            }
+            $query->orderBy('sort_order');
+        }, 'products.variants'])->orderBy('name')->get();
+
+        // 3. Sin categoría
+        $uncategorized = \App\Models\Product::doesntHave('categories')
+            ->with('variants')
+            ->when($search, function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")->orWhere('sku', 'like', "%{$search}%");
+            })->orderBy('sort_order')->get();
+
+        return view('admin.products.index', compact('categories', 'uncategorized', 'featuredProducts'));
+    }
+
+    public function updateOrder(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'order' => 'required|array',
+            'order.*.id' => 'required|exists:products,id',
+            'order.*.position' => 'required|integer',
+            'type' => 'nullable|string' // Saber si estamos ordenando destacados o normales
+        ]);
+
+        // Si es destacado, guardamos en featured_sort_order
+        $field = $request->type === 'featured' ? 'featured_sort_order' : 'sort_order';
+
+        foreach ($request->order as $item) {
+            \App\Models\Product::where('id', $item['id'])->update([$field => $item['position']]);
+        }
+
+        return response()->json(['success' => true]);
     }
 
     public function create(): View

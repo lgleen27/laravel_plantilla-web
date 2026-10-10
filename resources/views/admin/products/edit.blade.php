@@ -1,26 +1,15 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Editar producto
-        </h2>
-    </x-slot>
+@extends('layouts.admin-layout')
 
-    <div class="py-12">
-        <div class="mx-auto max-w-5xl sm:px-6 lg:px-8">
-            <div class="bg-white p-6 shadow-sm sm:rounded-lg">
-                <form
-                    method="POST"
-                    action="{{ route('admin.products.update', $product) }}"
-                    enctype="multipart/form-data"
-                >
-                    @csrf
-                    @method('PUT')
+@section('title', 'Editar Producto')
+@section('header', 'Editar: ' . $product->name)
 
-                    @include('admin.products._form', [
-                        'submitLabel' => 'Guardar cambios',
-                    ])
-                </form>
-            </div>
-        </div>
-    </div>
-</x-app-layout>
+@section('content')
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-5xl mx-auto">
+    <form method="POST" action="{{ route('admin.products.update', $product) }}" enctype="multipart/form-data">
+        @method('PUT')
+        @include('admin.products._form', [
+            'submitLabel' => 'Guardar cambios',
+        ])
+    </form>
+</div>
+@endsection

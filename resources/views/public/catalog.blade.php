@@ -95,7 +95,7 @@
                                     </h2>
 
                                     <p class="product-description">
-                                        {{ $product->short_description ?: 'Equipo con alto rendimiento y durabilidad.' }}
+                                        {{ $product->short_description ?: \Illuminate\Support\Str::limit(strip_tags($product->description), 90, '...') }}
                                     </p>
 
                                     <div class="product-footer">

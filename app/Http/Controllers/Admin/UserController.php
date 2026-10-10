@@ -14,12 +14,10 @@ class UserController extends Controller
 {
     public function index(): View
     {
-        $users = User::query()
-            ->with('roles')
-            ->latest()
-            ->paginate(10);
+        $users = User::query()->with('roles')->latest()->paginate(10);
+        $roles = \Spatie\Permission\Models\Role::query()->orderBy('name')->get();
 
-        return view('admin.users.index', compact('users'));
+        return view('admin.users.index', compact('users', 'roles'));
     }
 
     public function create(): View

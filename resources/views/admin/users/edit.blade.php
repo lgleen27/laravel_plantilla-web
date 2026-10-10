@@ -1,22 +1,13 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Editar usuario
-        </h2>
-    </x-slot>
+@extends('layouts.admin-layout')
 
-    <div class="py-12">
-        <div class="mx-auto max-w-2xl sm:px-6 lg:px-8">
-            <div class="bg-white p-6 shadow-sm sm:rounded-lg">
-                <form method="POST" action="{{ route('admin.users.update', $user) }}">
-                    @csrf
-                    @method('PUT')
+@section('title', 'Editar Usuario')
+@section('header', 'Editar: ' . $user->name)
 
-                    @include('admin.users._form', [
-                        'submitLabel' => 'Guardar cambios',
-                    ])
-                </form>
-            </div>
-        </div>
-    </div>
-</x-app-layout>
+@section('content')
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-3xl mx-auto">
+    <form method="POST" action="{{ route('admin.users.update', $user) }}">
+        @method('PUT')
+        @include('admin.users._form', ['submitLabel' => 'Guardar cambios'])
+    </form>
+</div>
+@endsection

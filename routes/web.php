@@ -28,7 +28,16 @@ Route::middleware(['auth', 'role:super-admin|admin|editor|viewer'])
     ->prefix('admin')
     ->as('admin.')
     ->group(function () {
-        Route::view('/', 'admin.dashboard')->name('dashboard');
+        Route::get('/', function () {
+            $stats = [
+                'total_products' => \App\Models\Product::count(),
+                'active_products' => \App\Models\Product::where('status', 'active')->count(),
+                'total_categories' => \App\Models\Category::count(),
+            ];
+            $recentProducts = \App\Models\Product::latest()->take(5)->get();
+            
+            return view('admin.dashboard', compact('stats', 'recentProducts'));
+        })->name('dashboard');
         Route::resource('users', UserController::class)
             ->except(['show'])
             ->middleware('role:super-admin');
@@ -61,6 +70,8 @@ Route::middleware(['auth', 'role:super-admin|admin|editor|viewer'])
         Route::get('products', [ProductController::class, 'index'])
             ->middleware('permission:products.view')
             ->name('products.index');
+
+        Route::post('products/reorder', [ProductController::class, 'updateOrder'])->name('products.reorder');
 
         Route::get('products/featured/order', [\App\Http\Controllers\Admin\FeaturedProductController::class, 'index'])
             ->name('products.featured.index');

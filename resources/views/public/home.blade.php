@@ -196,7 +196,7 @@
                                     </h3>
 
                                     <p class="product-description">
-                                        {{ $product->short_description ?: 'Equipo ideal para conservación y congelación de alta calidad.' }}
+                                        {{ $product->short_description ?: \Illuminate\Support\Str::limit(strip_tags($product->description), 90, '...') }}
                                     </p>
 
                                     <div class="product-footer">
