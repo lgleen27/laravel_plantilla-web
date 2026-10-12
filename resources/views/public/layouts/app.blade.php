@@ -72,7 +72,7 @@
                     </a>
                 </nav>
 
-                <a href="https://wa.me/5213781056303"
+                <a href="https://wa.me/{{ $siteSettings['whatsapp_number'] ?? '5213780000000' }}"
                    target="_blank"
                    class="whatsapp-button desktop-whatsapp-btn"
                    rel="noopener noreferrer">
@@ -112,13 +112,12 @@
                     </a>
 
                     <p>
-                        Con más de 10 años de experiencia, brindamos soluciones de calidad en congeladores, 
-                        refrigeración comercial y mobiliario. Orgullosamente desde Mexticacán, Jalisco, "El Pueblo de los Paleteros".
+                        {{ $siteSettings['footer_desc'] ?? 'Con más de 10 años de experiencia, brindamos soluciones de calidad en congeladores, refrigeración comercial y mobiliario. Orgullosamente desde Mexticacán, Jalisco, "El Pueblo de los Paleteros".' }}
                     </p>
 
                     <p>
                         <strong>
-                            Equipa tu negocio con la mejor tecnología en frío.
+                            {{ $siteSettings['footer_slogan'] ?? 'Equipa tu negocio con la mejor tecnología en frío.' }}
                         </strong>
                     </p>
                 </div>
@@ -127,9 +126,9 @@
                     <h3>Contacto y Atención</h3>
 
                     <ul>
-                        <li>Directo: +52 000 000 0000</li>
-                        <li>Correo:contacto@lizzycongela.com</li>
-                        <li>Ubicación: Mexticacán, Jalisco, México</li>
+                        <li>Directo: {{ $siteSettings['contact_phone'] ?? '+52 000 000 0000' }}</li>
+                        <li>Correo: {{ $siteSettings['contact_email'] ?? 'contacto@lizzycongela.com' }}</li>
+                        <li>Ubicación: {{ $siteSettings['contact_address'] ?? 'Mexticacán, Jalisco, México' }}</li>
                     </ul>
                 </div>
 
@@ -137,12 +136,12 @@
                     <h3>Horario de Atención</h3>
 
                     <ul>
-                        <li>Lunes a viernes: 9:00 AM - 6:00 PM</li>
-                        <li>Sábado: 9:00 AM - 2:00 PM</li>
-                        <li>Domingo: Cerrado</li>
+                        <li>Lunes a viernes: {{ $siteSettings['schedule_weekdays'] ?? '9:00 AM - 6:00 PM' }}</li>
+                        <li>Sábado: {{ $siteSettings['schedule_saturday'] ?? '9:00 AM - 2:00 PM' }}</li>
+                        <li>Domingo: {{ $siteSettings['schedule_sunday'] ?? 'Cerrado' }}</li>
                     </ul>
                 </div>
-            </div>
+            </div>    
 
             <div class="footer-bottom">
                 <span>

@@ -235,7 +235,7 @@
                 hasVariants: @json($variants->count() > 0),
             };
 
-            const whatsappNumber = '5213781056303';
+            const whatsappNumber = '{{ $siteSettings['whatsapp_number'] ?? '5213780000000' }}';
 
             const mainImage = document.getElementById('productMainImage');
             const imagePlaceholder = document.getElementById('productImagePlaceholder');

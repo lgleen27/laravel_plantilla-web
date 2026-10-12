@@ -99,6 +99,14 @@ Route::middleware(['auth', 'role:super-admin|admin|editor|viewer'])
             ->middleware('permission:products.delete')
             ->name('products.destroy');
             
+        // Configuración del sitio
+        Route::get('settings', [App\Http\Controllers\Admin\SettingController::class, 'index'])
+            ->name('settings.index')
+            ->middleware('role:super-admin');
+            
+        Route::post('settings', [App\Http\Controllers\Admin\SettingController::class, 'update'])
+            ->name('settings.update')
+            ->middleware('role:super-admin');
     });
     
 
