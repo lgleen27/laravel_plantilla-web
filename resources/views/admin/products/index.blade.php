@@ -40,50 +40,52 @@
             </button>
             <div x-show="activeAccordion === 'featured'" x-collapse x-cloak>
                 @if($featuredProducts->count() > 0)
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-white border-y border-sky-100 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                <th class="p-3 w-12 text-center">≡</th>
-                                <th class="p-3">Producto</th>
-                                <th class="p-3 text-slate-400">SKU</th>
-                                <th class="p-3 text-slate-400">Precio</th>
-                                <th class="p-3 text-center">Estado</th>
-                                <th class="p-3 text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <!-- IMPORTANTE: El data-type indica que estamos arrastrando destacados -->
-                        <tbody class="sortable-list divide-y divide-slate-100" data-type="featured">
-                            @foreach($featuredProducts as $product)
-                                @php
-                                    $firstVariant = $product->variants->first();
-                                    $price = $firstVariant?->price ?? $product->price;
-                                @endphp
-                                <tr class="hover:bg-slate-50/50 transition bg-white" data-id="{{ $product->id }}">
-                                    <td class="p-3 text-center align-middle text-slate-300 cursor-move hover:text-sky-600 drag-handle" title="Arrastra para reordenar destacados">
-                                        <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
-                                    </td>
-                                    <td class="p-3 align-middle font-medium text-slate-800">{{ $product->name }}</td>
-                                    <td class="p-3 align-middle text-sm text-slate-600">{{ $product->sku ?? '--' }}</td>
-                                    <td class="p-3 align-middle text-sm text-slate-600 font-medium">
-                                        @if($price > 0) ${{ number_format($price, 2) }} @else <span class="text-slate-400 font-normal">Cotizar</span> @endif
-                                    </td>
-                                    <td class="p-3 text-center align-middle">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $product->status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' }}">
-                                            {{ $product->status === 'active' ? 'Disponible' : 'Agotado' }}
-                                        </span>
-                                    </td>
-                                    <td class="p-3 text-right align-middle">
-                                        <div class="flex items-center justify-end gap-3">
-                                            <a href="{{ route('public.product.show', $product->slug) }}" target="_blank" class="text-slate-400 hover:text-sky-600" title="Ver en tienda">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                            </a>
-                                            <a href="{{ route('admin.products.edit', $product) }}" class="text-sky-600 hover:text-sky-800 text-sm font-medium">Editar</a>
-                                        </div>
-                                    </td>
+                    <div class="overflow-x-auto w-full">
+                        <table class="w-full text-left border-collapse min-w-[650px]">
+                            <thead>
+                                <tr class="bg-white border-y border-sky-100 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                    <th class="p-3 w-12 text-center">≡</th>
+                                    <th class="p-3">Producto</th>
+                                    <th class="p-3 text-slate-400">SKU</th>
+                                    <th class="p-3 text-slate-400">Precio</th>
+                                    <th class="p-3 text-center">Estado</th>
+                                    <th class="p-3 text-right">Acciones</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                            </thead>
+                            <!-- IMPORTANTE: El data-type indica que estamos arrastrando destacados -->
+                            <tbody class="sortable-list divide-y divide-slate-100" data-type="featured">
+                                @foreach($featuredProducts as $product)
+                                    @php
+                                        $firstVariant = $product->variants->first();
+                                        $price = $firstVariant?->price ?? $product->price;
+                                    @endphp
+                                    <tr class="hover:bg-slate-50/50 transition bg-white" data-id="{{ $product->id }}">
+                                        <td class="p-3 text-center align-middle text-slate-300 cursor-move hover:text-sky-600 drag-handle" title="Arrastra para reordenar destacados">
+                                            <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
+                                        </td>
+                                        <td class="p-3 align-middle font-medium text-slate-800">{{ $product->name }}</td>
+                                        <td class="p-3 align-middle text-sm text-slate-600">{{ $product->sku ?? '--' }}</td>
+                                        <td class="p-3 align-middle text-sm text-slate-600 font-medium">
+                                            @if($price > 0) ${{ number_format($price, 2) }} @else <span class="text-slate-400 font-normal">Cotizar</span> @endif
+                                        </td>
+                                        <td class="p-3 text-center align-middle">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $product->status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' }}">
+                                                {{ $product->status === 'active' ? 'Disponible' : 'Agotado' }}
+                                            </span>
+                                        </td>
+                                        <td class="p-3 text-right align-middle">
+                                            <div class="flex items-center justify-end gap-3">
+                                                <a href="{{ route('public.product.show', $product->slug) }}" target="_blank" class="text-slate-400 hover:text-sky-600" title="Ver en tienda">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                                </a>
+                                                <a href="{{ route('admin.products.edit', $product) }}" class="text-sky-600 hover:text-sky-800 text-sm font-medium">Editar</a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 @else
                     <div class="p-6 text-center text-slate-500 text-sm">No hay productos destacados.</div>
                 @endif
@@ -110,74 +112,76 @@
                 <!-- Contenido (La tabla de productos) -->
                 <div x-show="activeAccordion === {{ $category->id }}" x-collapse x-cloak>
                     @if($category->products->count() > 0)
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-white border-y border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                    <th class="p-3 w-12 text-center">≡</th>
-                                    <th class="p-3">Producto</th>
-                                    <th class="p-3 text-slate-400">SKU</th>
-                                    <th class="p-3 text-slate-400">Precio</th>
-                                    <th class="p-3 text-center">Estado</th>
-                                    <th class="p-3 text-right">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody class="sortable-list divide-y divide-slate-100" data-category="{{ $category->id }}">
-                                @foreach($category->products as $product)
-                                    @php
-                                        // Obtener el precio de la primera variante o del producto directamente
-                                        $firstVariant = $product->variants->first();
-                                        $price = $firstVariant?->price ?? $product->price;
-                                    @endphp
-                                    <tr class="hover:bg-slate-50/50 transition bg-white" data-id="{{ $product->id }}">
-                                        
-                                        <!-- Botón para Arrastrar -->
-                                        <td class="p-3 text-center align-middle text-slate-300 cursor-move hover:text-sky-600 drag-handle" title="Arrastra para reordenar">
-                                            <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
-                                        </td>
-                                        
-                                        <!-- Producto Info -->
-                                        <td class="p-3 align-middle font-medium text-slate-800">
-                                            {{ $product->name }}
-                                        </td>
-
-                                        <!-- SKU -->
-                                        <td class="p-3 align-middle text-sm text-slate-600">
-                                            {{ $product->sku ?? '--' }}
-                                        </td>
-
-                                        <!-- Precio -->
-                                        <td class="p-3 align-middle text-sm text-slate-600 font-medium">
-                                            @if($price > 0)
-                                                ${{ number_format($price, 2) }}
-                                            @else
-                                                <span class="text-slate-400 font-normal">Cotizar</span>
-                                            @endif
-                                        </td>
-
-                                        <!-- Estado -->
-                                        <td class="p-3 text-center align-middle">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $product->status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' }}">
-                                                {{ $product->status === 'active' ? 'Disponible' : 'Agotado' }}
-                                            </span>
-                                        </td>
-
-                                        <!-- Acciones -->
-                                        <td class="p-3 text-right align-middle">
-                                            <div class="flex items-center justify-end gap-3">
-                                                <a href="{{ route('public.product.show', $product->slug) }}" target="_blank" class="text-slate-400 hover:text-sky-600" title="Ver en tienda">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                                </a>
-                                                <a href="{{ route('admin.products.edit', $product) }}" class="text-sky-600 hover:text-sky-800 text-sm font-medium">Editar</a>
-                                                <form action="{{ route('admin.products.destroy', $product) }}" method="POST" onsubmit="return confirm('¿Eliminar producto?');" class="inline">
-                                                    @csrf @method('DELETE')
-                                                    <button type="submit" class="text-rose-500 hover:text-rose-700 text-sm font-medium">Eliminar</button>
-                                                </form>
-                                            </div>
-                                        </td>
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full text-left border-collapse min-w-[650px]">
+                                <thead>
+                                    <tr class="bg-white border-y border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                        <th class="p-3 w-12 text-center">≡</th>
+                                        <th class="p-3">Producto</th>
+                                        <th class="p-3 text-slate-400">SKU</th>
+                                        <th class="p-3 text-slate-400">Precio</th>
+                                        <th class="p-3 text-center">Estado</th>
+                                        <th class="p-3 text-right">Acciones</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody class="sortable-list divide-y divide-slate-100" data-category="{{ $category->id }}">
+                                    @foreach($category->products as $product)
+                                        @php
+                                            // Obtener el precio de la primera variante o del producto directamente
+                                            $firstVariant = $product->variants->first();
+                                            $price = $firstVariant?->price ?? $product->price;
+                                        @endphp
+                                        <tr class="hover:bg-slate-50/50 transition bg-white" data-id="{{ $product->id }}">
+                                            
+                                            <!-- Botón para Arrastrar -->
+                                            <td class="p-3 text-center align-middle text-slate-300 cursor-move hover:text-sky-600 drag-handle" title="Arrastra para reordenar">
+                                                <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
+                                            </td>
+                                            
+                                            <!-- Producto Info -->
+                                            <td class="p-3 align-middle font-medium text-slate-800">
+                                                {{ $product->name }}
+                                            </td>
+
+                                            <!-- SKU -->
+                                            <td class="p-3 align-middle text-sm text-slate-600">
+                                                {{ $product->sku ?? '--' }}
+                                            </td>
+
+                                            <!-- Precio -->
+                                            <td class="p-3 align-middle text-sm text-slate-600 font-medium">
+                                                @if($price > 0)
+                                                    ${{ number_format($price, 2) }}
+                                                @else
+                                                    <span class="text-slate-400 font-normal">Cotizar</span>
+                                                @endif
+                                            </td>
+
+                                            <!-- Estado -->
+                                            <td class="p-3 text-center align-middle">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $product->status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' }}">
+                                                    {{ $product->status === 'active' ? 'Disponible' : 'Agotado' }}
+                                                </span>
+                                            </td>
+
+                                            <!-- Acciones -->
+                                            <td class="p-3 text-right align-middle">
+                                                <div class="flex items-center justify-end gap-3">
+                                                    <a href="{{ route('public.product.show', $product->slug) }}" target="_blank" class="text-slate-400 hover:text-sky-600" title="Ver en tienda">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                                    </a>
+                                                    <a href="{{ route('admin.products.edit', $product) }}" class="text-sky-600 hover:text-sky-800 text-sm font-medium">Editar</a>
+                                                    <form action="{{ route('admin.products.destroy', $product) }}" method="POST" onsubmit="return confirm('¿Eliminar producto?');" class="inline">
+                                                        @csrf @method('DELETE')
+                                                        <button type="submit" class="text-rose-500 hover:text-rose-700 text-sm font-medium">Eliminar</button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     @else
                         <div class="p-6 text-center text-slate-500 text-sm">No hay productos que coincidan con la búsqueda.</div>
                     @endif
@@ -197,19 +201,21 @@
                 <svg class="w-5 h-5 text-rose-500 transition-transform duration-200" :class="activeAccordion === 'uncat' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
             <div x-show="activeAccordion === 'uncat'" x-collapse x-cloak>
-                 <table class="w-full text-left border-collapse">
-                    <tbody class="divide-y divide-slate-100">
-                        @foreach($uncategorized as $product)
-                            <tr class="hover:bg-slate-50/50 transition bg-white">
-                                <td class="p-3 w-12"></td>
-                                <td class="p-3 font-medium">{{ $product->name }}</td>
-                                <td class="p-3 text-right">
-                                    <a href="{{ route('admin.products.edit', $product) }}" class="text-sky-600 hover:text-sky-800 font-medium">Editar y Categorizar</a>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                 </table>
+                <div class="overflow-x-auto w-full">
+                    <table class="w-full text-left border-collapse min-w-[500px]">
+                        <tbody class="divide-y divide-slate-100">
+                            @foreach($uncategorized as $product)
+                                <tr class="hover:bg-slate-50/50 transition bg-white">
+                                    <td class="p-3 w-12"></td>
+                                    <td class="p-3 font-medium">{{ $product->name }}</td>
+                                    <td class="p-3 text-right">
+                                        <a href="{{ route('admin.products.edit', $product) }}" class="text-sky-600 hover:text-sky-800 font-medium">Editar y Categorizar</a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         @endif

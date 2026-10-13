@@ -14,14 +14,13 @@ Route::get('/catalogo', [CatalogController::class, 'catalog'])->name('public.cat
 Route::get('/catalogo/{product:slug}', [CatalogController::class, 'show'])->name('public.product.show');
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+    return redirect()->route('admin.dashboard');
+})->middleware(['auth'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::view('/admin', 'admin.dashboard')->name('admin.dashboard');
 });  
 
 Route::middleware(['auth', 'role:super-admin|admin|editor|viewer'])

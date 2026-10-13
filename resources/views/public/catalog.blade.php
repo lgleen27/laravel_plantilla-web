@@ -128,23 +128,54 @@
                 </div>
 
                 @if($products->hasPages())
+                    @php
+                        $current = $products->currentPage();
+                        $last = $products->lastPage();
+                        $delta = 2; // Rango de páginas a mostrar a los lados de la actual
+                        $left = $current - $delta;
+                        $right = $current + $delta + 1;
+                        $range = [];
+                        $pagesWithDots = [];
+                        $prev = null;
+
+                        for ($i = 1; $i <= $last; $i++) {
+                            if ($i == 1 || $i == $last || ($i >= $left && $i < $right)) {
+                                $range[] = $i;
+                            }
+                        }
+
+                        foreach ($range as $i) {
+                            if ($prev) {
+                                if ($i - $prev === 2) {
+                                    $pagesWithDots[] = $prev + 1;
+                                } elseif ($i - $prev !== 1) {
+                                    $pagesWithDots[] = '...';
+                                }
+                            }
+                            $pagesWithDots[] = $i;
+                            $prev = $i;
+                        }
+                    @endphp
+
                     <div class="pagination">
                         @if(!$products->onFirstPage())
-                            <a href="{{ $products->previousPageUrl() }}">
+                            <a href="{{ $products->previousPageUrl() }}" class="pagination-prev" rel="prev">
                                 ← Anterior
                             </a>
                         @endif
 
-                        @foreach($products->getUrlRange(1, $products->lastPage()) as $page => $url)
-                            @if($page == $products->currentPage())
+                        @foreach($pagesWithDots as $page)
+                            @if($page === '...')
+                                <span class="pagination-dots">...</span>
+                            @elseif($page == $current)
                                 <span class="active">{{ $page }}</span>
                             @else
-                                <a href="{{ $url }}">{{ $page }}</a>
+                                <a href="{{ $products->url($page) }}">{{ $page }}</a>
                             @endif
                         @endforeach
 
                         @if($products->hasMorePages())
-                            <a href="{{ $products->nextPageUrl() }}">
+                            <a href="{{ $products->nextPageUrl() }}" class="pagination-next" rel="next">
                                 Siguiente →
                             </a>
                         @endif

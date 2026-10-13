@@ -30,8 +30,6 @@ class RolePermissionSeeder extends Seeder
             'products.update',
             'products.delete',
 
-
-
             'content.view',
             'content.update',
 
@@ -61,8 +59,6 @@ class RolePermissionSeeder extends Seeder
             'products.update',
             'products.delete',
 
-
-
             'content.view',
             'content.update',
 
@@ -76,8 +72,6 @@ class RolePermissionSeeder extends Seeder
             'products.view',
             'products.create',
             'products.update',
-
-
 
             'content.view',
             'content.update',

@@ -30,44 +30,46 @@
 
     <!-- Lista de Usuarios -->
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600">
-                    <th class="p-4">Nombre</th>
-                    <th class="p-4">Correo</th>
-                    <th class="p-4 text-center">Rol</th>
-                    <th class="p-4 text-right">Acciones</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-                @forelse ($users as $user)
-                    <tr class="hover:bg-slate-50/50 transition bg-white">
-                        <td class="p-4 font-medium text-slate-800">{{ $user->name }}</td>
-                        <td class="p-4 text-slate-600">{{ $user->email }}</td>
-                        <td class="p-4 text-center">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-800 capitalize">
-                                {{ $user->getRoleNames()->implode(', ') ?: 'Sin rol' }}
-                            </span>
-                        </td>
-                        <td class="p-4 text-right">
-                            <div class="flex items-center justify-end gap-3">
-                                <a href="{{ route('admin.users.edit', $user) }}" class="text-sky-600 hover:text-sky-800 text-sm font-medium">Editar</a>
-                                @if (! $user->is(auth()->user()) && ! $user->hasRole('super-admin'))
-                                    <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('¿Deseas eliminar este usuario?');" class="inline">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="text-rose-500 hover:text-rose-700 text-sm font-medium">Eliminar</button>
-                                    </form>
-                                @endif
-                            </div>
-                        </td>
+        <div class="overflow-x-auto w-full">
+            <table class="w-full text-left border-collapse min-w-[600px]">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600">
+                        <th class="p-4 whitespace-nowrap">Nombre</th>
+                        <th class="p-4 whitespace-nowrap">Correo</th>
+                        <th class="p-4 text-center whitespace-nowrap">Rol</th>
+                        <th class="p-4 text-right whitespace-nowrap">Acciones</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="4" class="p-8 text-center text-slate-500">No hay usuarios registrados.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse ($users as $user)
+                        <tr class="hover:bg-slate-50/50 transition bg-white">
+                            <td class="p-4 font-medium text-slate-800">{{ $user->name }}</td>
+                            <td class="p-4 text-slate-600">{{ $user->email }}</td>
+                            <td class="p-4 text-center">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-800 capitalize">
+                                    {{ $user->getRoleNames()->implode(', ') ?: 'Sin rol' }}
+                                </span>
+                            </td>
+                            <td class="p-4 text-right">
+                                <div class="flex items-center justify-end gap-3">
+                                    <a href="{{ route('admin.users.edit', $user) }}" class="text-sky-600 hover:text-sky-800 text-sm font-medium">Editar</a>
+                                    @if (! $user->is(auth()->user()) && ! $user->hasRole('super-admin'))
+                                        <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('¿Deseas eliminar este usuario?');" class="inline">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="text-rose-500 hover:text-rose-700 text-sm font-medium">Eliminar</button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="p-8 text-center text-slate-500">No hay usuarios registrados.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
         @if($users->hasPages())
             <div class="p-4 border-t border-slate-200">
                 {{ $users->links() }}

@@ -16,11 +16,8 @@
         href="{{ Storage::disk('public')->url('branding/MYLlogo.png') }}"
     >
     
-    <!-- Scripts y Tailwind -->
+    <!-- Scripts y Tailwind (incluye AlpineJS compilado) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
-    <!-- AlpineJS para interactividad móvil -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="font-sans antialiased text-slate-800 bg-slate-50" x-data="{ sidebarOpen: false }">
     
@@ -35,7 +32,7 @@
         </div>
 
         <!-- Main Content Area -->
-        <div class="flex flex-col flex-1 w-full overflow-hidden">
+        <div class="flex flex-col flex-1 w-full overflow-hidden min-w-0">
             
             <!-- Mobile Header (Solo visible en celulares) -->
             <header class="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 lg:hidden">
@@ -57,7 +54,7 @@
             @endisset
 
             <!-- Page Content -->
-            <main class="flex-1 overflow-y-auto p-4 lg:p-8">
+            <main class="flex-1 overflow-y-auto p-4 lg:p-8 min-w-0">
                 
                 <!-- Alertas de Sesión -->
                 @if(session('success'))

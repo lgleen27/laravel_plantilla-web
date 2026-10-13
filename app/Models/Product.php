@@ -169,8 +169,6 @@ class Product extends Model
             ->withPivot(['is_primary', 'sort_order']);
     }
 
-
-
     public function primaryCategory(): BelongsToMany
     {
         return $this->categories()->wherePivot('is_primary', true);

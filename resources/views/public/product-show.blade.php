@@ -37,13 +37,15 @@
             <div class="product-detail-grid">
                 {{-- Galería de Imágenes --}}
                 <div class="product-gallery">
-                    <div class="product-main-image">
+                    <div class="product-main-image" id="productMainImageContainer">
                         @if($mainImage)
                             <img
                                 id="productMainImage"
                                 src="{{ Storage::disk($mainImage->disk)->url($mainImage->path) }}"
                                 alt="{{ $product->name }}"
                             >
+                            <button type="button" class="gallery-nav-btn gallery-prev {{ count($previewImages) > 1 ? '' : 'is-hidden' }}" id="galleryPrevBtn" aria-label="Foto anterior">‹</button>
+                            <button type="button" class="gallery-nav-btn gallery-next {{ count($previewImages) > 1 ? '' : 'is-hidden' }}" id="galleryNextBtn" aria-label="Siguiente foto">›</button>
                         @else
                             <div id="productImagePlaceholder" class="product-image-placeholder">
                                 Sin imagen disponible
@@ -238,6 +240,9 @@
             const whatsappNumber = '{{ $siteSettings['whatsapp_number'] ?? '5213780000000' }}';
 
             const mainImage = document.getElementById('productMainImage');
+            const mainImageContainer = document.getElementById('productMainImageContainer');
+            const galleryPrevBtn = document.getElementById('galleryPrevBtn');
+            const galleryNextBtn = document.getElementById('galleryNextBtn');
             const imagePlaceholder = document.getElementById('productImagePlaceholder');
             const thumbnailsContainer = document.getElementById('productThumbnails');
 
@@ -268,7 +273,7 @@
                 }).format(numericPrice);
             };
 
-            const setMainImage = (url, alt) => {
+            const setMainImage = (url, alt, direction = null) => {
                 if (!url) return;
 
                 const currentImage = document.getElementById('productMainImage');
@@ -276,19 +281,28 @@
                 if (currentImage) {
                     if (currentImage.src === url) return;
 
-                    currentImage.style.opacity = '0.5';
+                    currentImage.style.opacity = '0.35';
+                    if (direction === 'next') {
+                        currentImage.style.transform = 'translateX(-12px)';
+                    } else if (direction === 'prev') {
+                        currentImage.style.transform = 'translateX(12px)';
+                    }
 
                     window.requestAnimationFrame(() => {
                         currentImage.src = url;
                         currentImage.alt = alt;
 
-                        currentImage.onload = () => {
+                        const onFinish = () => {
                             currentImage.style.opacity = '1';
+                            currentImage.style.transform = 'translateX(0)';
                         };
 
-                        currentImage.onerror = () => {
-                            currentImage.style.opacity = '1';
-                        };
+                        if (currentImage.complete) {
+                            onFinish();
+                        } else {
+                            currentImage.onload = onFinish;
+                            currentImage.onerror = onFinish;
+                        }
                     });
 
                     return;
@@ -306,7 +320,7 @@
                     newImage.src = url;
                     newImage.alt = alt;
                     newImage.decoding = 'async';
-                    gallery.appendChild(newImage);
+                    gallery.insertBefore(newImage, gallery.firstChild);
                 }
             };
 
@@ -320,6 +334,107 @@
                 });
                 button.classList.add('is-active');
             };
+
+            const updateGalleryButtonsVisibility = (count) => {
+                if (galleryPrevBtn && galleryNextBtn) {
+                    if (count > 1) {
+                        galleryPrevBtn.classList.remove('is-hidden');
+                        galleryNextBtn.classList.remove('is-hidden');
+                    } else {
+                        galleryPrevBtn.classList.add('is-hidden');
+                        galleryNextBtn.classList.add('is-hidden');
+                    }
+                }
+            };
+
+            const showImageAtIndex = (index, direction = 'next') => {
+                const thumbnails = thumbnailsContainer?.querySelectorAll('.product-thumbnail');
+                if (!thumbnails || thumbnails.length <= 1) return;
+
+                if (index < 0) index = thumbnails.length - 1;
+                if (index >= thumbnails.length) index = 0;
+
+                const targetThumb = thumbnails[index];
+                if (!targetThumb) return;
+
+                setMainImage(targetThumb.dataset.imageUrl, targetThumb.dataset.imageAlt, direction);
+                activateThumbnail(targetThumb);
+                targetThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            };
+
+            if (galleryPrevBtn) {
+                galleryPrevBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const thumbnails = thumbnailsContainer?.querySelectorAll('.product-thumbnail');
+                    if (!thumbnails || thumbnails.length <= 1) return;
+                    let currentIndex = Array.from(thumbnails).findIndex(t => t.classList.contains('is-active'));
+                    if (currentIndex === -1) currentIndex = 0;
+                    showImageAtIndex(currentIndex - 1, 'prev');
+                });
+            }
+
+            if (galleryNextBtn) {
+                galleryNextBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const thumbnails = thumbnailsContainer?.querySelectorAll('.product-thumbnail');
+                    if (!thumbnails || thumbnails.length <= 1) return;
+                    let currentIndex = Array.from(thumbnails).findIndex(t => t.classList.contains('is-active'));
+                    if (currentIndex === -1) currentIndex = 0;
+                    showImageAtIndex(currentIndex + 1, 'next');
+                });
+            }
+
+            // Gesto táctil (Swipe) para deslizar imágenes en celulares y tablets
+            if (mainImageContainer) {
+                let touchStartX = 0;
+                let touchStartY = 0;
+                let touchEndX = 0;
+                let touchEndY = 0;
+                let isSwiping = false;
+
+                mainImageContainer.addEventListener('touchstart', (e) => {
+                    if (e.touches.length !== 1) return;
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    touchEndX = touchStartX;
+                    touchEndY = touchStartY;
+                    isSwiping = true;
+                }, { passive: true });
+
+                mainImageContainer.addEventListener('touchmove', (e) => {
+                    if (!isSwiping || e.touches.length !== 1) return;
+                    touchEndX = e.touches[0].clientX;
+                    touchEndY = e.touches[0].clientY;
+                }, { passive: true });
+
+                mainImageContainer.addEventListener('touchend', () => {
+                    if (!isSwiping) return;
+                    isSwiping = false;
+
+                    const diffX = touchEndX - touchStartX;
+                    const diffY = touchEndY - touchStartY;
+                    const minSwipeDistance = 35; // Umbral mínimo de movimiento en px
+
+                    // Verificar que el movimiento fue horizontal y superó el umbral
+                    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > minSwipeDistance) {
+                        const thumbnails = thumbnailsContainer?.querySelectorAll('.product-thumbnail');
+                        if (!thumbnails || thumbnails.length <= 1) return;
+
+                        let currentIndex = Array.from(thumbnails).findIndex(t => t.classList.contains('is-active'));
+                        if (currentIndex === -1) currentIndex = 0;
+
+                        if (diffX < 0) {
+                            // Deslizamiento hacia la izquierda -> Siguiente foto
+                            showImageAtIndex(currentIndex + 1, 'next');
+                        } else {
+                            // Deslizamiento hacia la derecha -> Foto anterior
+                            showImageAtIndex(currentIndex - 1, 'prev');
+                        }
+                    }
+                }, { passive: true });
+            }
 
             if (thumbnailsContainer) {
                 thumbnailsContainer.addEventListener('click', (event) => {
@@ -343,6 +458,7 @@
 
                 if (!images || images.length === 0) {
                     thumbnailsContainer.replaceChildren();
+                    updateGalleryButtonsVisibility(0);
                     return;
                 }
 
@@ -365,6 +481,7 @@
                 });
 
                 thumbnailsContainer.replaceChildren(fragment);
+                updateGalleryButtonsVisibility(images.length);
             };
 
             variantButtons.forEach((button) => {

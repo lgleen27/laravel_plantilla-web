@@ -43,82 +43,84 @@
 
     <!-- Lista de Categorías -->
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600">
-                    <th class="p-4">Categoría</th>
-                    <th class="p-4 text-center">Estado</th>
-                    <th class="p-4 text-center">Métricas de Productos</th>
-                    <th class="p-4 text-right">Acciones</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-                @forelse($categories as $category)
-                    <tr class="hover:bg-slate-50/50 transition" x-data="{ editing: false }">
-                        
-                        <!-- Columna: Nombre (Vista normal y Edición) -->
-                        <td class="p-4 align-middle">
-                            <div x-show="!editing" class="font-medium text-slate-800">{{ $category->name }}</div>
+        <div class="overflow-x-auto w-full">
+            <table class="w-full text-left border-collapse min-w-[650px]">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600">
+                        <th class="p-4 whitespace-nowrap">Categoría</th>
+                        <th class="p-4 text-center whitespace-nowrap">Estado</th>
+                        <th class="p-4 text-center whitespace-nowrap">Métricas de Productos</th>
+                        <th class="p-4 text-right whitespace-nowrap">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($categories as $category)
+                        <tr class="hover:bg-slate-50/50 transition" x-data="{ editing: false }">
                             
-                            <!-- Formulario Inline de Edición -->
-                            <form x-show="editing" x-cloak action="{{ route('admin.categories.update', $category) }}" method="POST" class="flex gap-2 items-center" @submit="editing = false">
-                                @csrf @method('PUT')
-                                <input type="text" name="name" value="{{ $category->name }}" required class="w-full text-sm rounded border-slate-300 focus:ring-sky-500 h-8">
-                                <label class="flex items-center text-xs text-slate-500 gap-1 whitespace-nowrap">
-                                    <input type="checkbox" name="is_active" value="1" {{ $category->is_active ? 'checked' : '' }} class="rounded border-slate-300 text-sky-600"> Activa
-                                </label>
-                                <button type="submit" class="p-1.5 bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></button>
-                                <button type="button" @click="editing = false" class="p-1.5 bg-slate-100 text-slate-600 rounded hover:bg-slate-200"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-                            </form>
-                        </td>
-
-                        <!-- Columna: Estado -->
-                        <td class="p-4 text-center align-middle">
-                            <span x-show="!editing" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $category->is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600' }}">
-                                {{ $category->is_active ? 'Activa' : 'Inactiva' }}
-                            </span>
-                        </td>
-
-                        <!-- Columna: Métricas -->
-                        <td class="p-4 align-middle">
-                            <div class="flex items-center justify-center gap-3">
-                                <span class="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded" title="Total Productos">
-                                    📦 {{ $category->total_products }}
-                                </span>
-                                <span class="text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-1 rounded" title="Disponibles">
-                                    ✅ {{ $category->available_products }}
-                                </span>
-                                <span class="text-xs font-medium text-rose-700 bg-rose-50 px-2 py-1 rounded" title="Agotados">
-                                    ✕ {{ $category->out_of_stock_products }}
-                                </span>
+                            <!-- Columna: Nombre (Vista normal y Edición) -->
+                            <td class="p-4 align-middle">
+                                <div x-show="!editing" class="font-medium text-slate-800">{{ $category->name }}</div>
                                 
-                                <!-- Botón Lupa (Modal) -->
-                                <button type="button" @click="modalTitle = '{{ $category->name }}'; modalProducts = {{ $category->products->toJson() }}; modalOpen = true" 
-                                        class="p-1.5 text-sky-600 hover:bg-sky-50 rounded transition" title="Ver detalles rápidos">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                                </button>
-                            </div>
-                        </td>
-
-                        <!-- Columna: Acciones -->
-                        <td class="p-4 text-right align-middle">
-                            <div class="flex items-center justify-end gap-2" x-show="!editing">
-                                <button type="button" @click="editing = true" class="text-sky-600 hover:text-sky-800 text-sm font-medium">Editar</button>
-                                
-                                <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar esta categoría?');">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="text-rose-500 hover:text-rose-700 text-sm font-medium">Eliminar</button>
+                                <!-- Formulario Inline de Edición -->
+                                <form x-show="editing" x-cloak action="{{ route('admin.categories.update', $category) }}" method="POST" class="flex gap-2 items-center" @submit="editing = false">
+                                    @csrf @method('PUT')
+                                    <input type="text" name="name" value="{{ $category->name }}" required class="w-full text-sm rounded border-slate-300 focus:ring-sky-500 h-8">
+                                    <label class="flex items-center text-xs text-slate-500 gap-1 whitespace-nowrap">
+                                        <input type="checkbox" name="is_active" value="1" {{ $category->is_active ? 'checked' : '' }} class="rounded border-slate-300 text-sky-600"> Activa
+                                    </label>
+                                    <button type="submit" class="p-1.5 bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></button>
+                                    <button type="button" @click="editing = false" class="p-1.5 bg-slate-100 text-slate-600 rounded hover:bg-slate-200"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
                                 </form>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="4" class="p-8 text-center text-slate-500">No hay categorías registradas o que coincidan con la búsqueda.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                            </td>
+
+                            <!-- Columna: Estado -->
+                            <td class="p-4 text-center align-middle">
+                                <span x-show="!editing" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $category->is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600' }}">
+                                    {{ $category->is_active ? 'Activa' : 'Inactiva' }}
+                                </span>
+                            </td>
+
+                            <!-- Columna: Métricas -->
+                            <td class="p-4 align-middle">
+                                <div class="flex items-center justify-center gap-3">
+                                    <span class="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded" title="Total Productos">
+                                        📦 {{ $category->total_products }}
+                                    </span>
+                                    <span class="text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-1 rounded" title="Disponibles">
+                                        ✅ {{ $category->available_products }}
+                                    </span>
+                                    <span class="text-xs font-medium text-rose-700 bg-rose-50 px-2 py-1 rounded" title="Agotados">
+                                        ✕ {{ $category->out_of_stock_products }}
+                                    </span>
+                                    
+                                    <!-- Botón Lupa (Modal) -->
+                                    <button type="button" @click="modalTitle = '{{ $category->name }}'; modalProducts = {{ $category->products->toJson() }}; modalOpen = true" 
+                                            class="p-1.5 text-sky-600 hover:bg-sky-50 rounded transition" title="Ver detalles rápidos">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                    </button>
+                                </div>
+                            </td>
+
+                            <!-- Columna: Acciones -->
+                            <td class="p-4 text-right align-middle">
+                                <div class="flex items-center justify-end gap-2" x-show="!editing">
+                                    <button type="button" @click="editing = true" class="text-sky-600 hover:text-sky-800 text-sm font-medium">Editar</button>
+                                    
+                                    <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar esta categoría?');">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="text-rose-500 hover:text-rose-700 text-sm font-medium">Eliminar</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="p-8 text-center text-slate-500">No hay categorías registradas o que coincidan con la búsqueda.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
 
         <!-- Paginación -->
         @if($categories->hasPages())
