@@ -21,26 +21,36 @@ class ProductController extends Controller
         // 1. Productos Destacados (La nueva "Categoría")
         $featuredProducts = \App\Models\Product::where('is_featured', true)
             ->with('variants')
-            ->when($search, function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")->orWhere('sku', 'like', "%{$search}%");
-            })->orderBy('featured_sort_order')->get();
+            ->when($search, fn($q) => $q->search($search))
+            ->orderBy('featured_sort_order')
+            ->get();
 
-        // 2. Categorías Normales
-        $categories = \App\Models\Category::with(['products' => function ($query) use ($search) {
-            if ($search) {
-                $query->where('name', 'like', "%{$search}%")->orWhere('sku', 'like', "%{$search}%");
-            }
-            $query->orderBy('sort_order');
-        }, 'products.variants'])->orderBy('name')->get();
+        // 2. Categorías Normales (Solo categorías con productos que coincidan al buscar por nombre, SKU o variantes)
+        $categories = \App\Models\Category::when($search, function ($query) use ($search) {
+                $query->whereHas('products', function ($q) use ($search) {
+                    $q->search($search);
+                });
+            })
+            ->with(['products' => function ($query) use ($search) {
+                if ($search) {
+                    $query->search($search);
+                }
+                $query->orderBy('sort_order');
+            }, 'products.variants'])
+            ->orderBy('name')
+            ->get();
 
         // 3. Sin categoría
         $uncategorized = \App\Models\Product::doesntHave('categories')
             ->with('variants')
-            ->when($search, function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")->orWhere('sku', 'like', "%{$search}%");
-            })->orderBy('sort_order')->get();
+            ->when($search, fn($q) => $q->search($search))
+            ->orderBy('sort_order')
+            ->get();
 
-        return view('admin.products.index', compact('categories', 'uncategorized', 'featuredProducts'));
+        // 4. Contador de papelera
+        $trashedCount = \App\Models\Product::onlyTrashed()->count();
+
+        return view('admin.products.index', compact('categories', 'uncategorized', 'featuredProducts', 'trashedCount'));
     }
 
     public function updateOrder(\Illuminate\Http\Request $request)
@@ -73,8 +83,9 @@ class ProductController extends Controller
         $validated = $request->validated();
         $storedPaths = [];
 
-        // VALIDACIÓN ESTRICTA DE VARIANTES NUEVAS
+        // VALIDACIÓN DE VARIANTES NUEVAS
         $nombresUsados = [];
+        $hasAnyImage = false;
         if (!empty($validated['variants'])) {
             foreach ($validated['variants'] as $v) {
                 $name = trim($v['name'] ?? '');
@@ -85,15 +96,21 @@ class ProductController extends Controller
                 }
                 $nombresUsados[] = strtolower($name);
 
-                if (empty($v['images'])) {
-                    return back()->withInput()->with('error', "La variante '$name' debe tener al menos una fotografía.");
+                if (!empty($v['images'])) {
+                    $hasAnyImage = true;
                 }
             }
         }
 
+        if (!$hasAnyImage) {
+            return back()->withInput()->with('error', "Debes subir al menos una fotografía para el producto (en la primera variante).");
+        }
+
+        $product = null;
+
         try {
-            DB::transaction(function () use ($validated, $request, &$storedPaths) {
-                $product = Product::create([
+            $product = DB::transaction(function () use ($validated, $request, &$storedPaths) {
+                $newProduct = Product::create([
                     'name' => $validated['name'],
                     'sku' => $validated['sku'] ?? null,
                     'description' => $validated['description'] ?? null,
@@ -106,7 +123,7 @@ class ProductController extends Controller
                     'updated_by' => $request->user()->id,
                 ]);
 
-                $product->categories()->sync([
+                $newProduct->categories()->sync([
                     $validated['category_id'] => ['is_primary' => true, 'sort_order' => 1]
                 ]);
 
@@ -115,7 +132,7 @@ class ProductController extends Controller
                         $variantName = trim($variantData['name'] ?? '');
                         if (empty($variantName)) $variantName = 'Única';
 
-                        $variant = $product->variants()->create([
+                        $variant = $newProduct->variants()->create([
                             'name' => $variantName,
                             'sku' => $variantData['sku'] ?? null,
                             'status' => 'active',
@@ -124,20 +141,24 @@ class ProductController extends Controller
                             'updated_by' => $request->user()->id,
                         ]);
 
-                        foreach ($variantData['images'] as $imageIndex => $image) {
-                            $path = $image->store('products/' . $product->id . '/variants/' . $variant->id, 'public');
-                            $storedPaths[] = $path;
+                        if (!empty($variantData['images'])) {
+                            foreach ($variantData['images'] as $imageIndex => $image) {
+                                $path = $image->store('products/' . $newProduct->id . '/variants/' . $variant->id, 'public');
+                                $storedPaths[] = $path;
 
-                            $variant->media()->create([
-                                'collection' => 'gallery', 'disk' => 'public', 'path' => $path,
-                                'file_name' => $image->getClientOriginalName(), 'mime_type' => $image->getMimeType(),
-                                'size' => $image->getSize(), 'alt_text' => $product->name . ' - ' . $variantName,
-                                'is_primary' => $imageIndex === 0, 'sort_order' => $imageIndex + 1,
-                                'created_by' => $request->user()->id,
-                            ]);
+                                $variant->media()->create([
+                                    'collection' => 'gallery', 'disk' => 'public', 'path' => $path,
+                                    'file_name' => $image->getClientOriginalName(), 'mime_type' => $image->getMimeType(),
+                                    'size' => $image->getSize(), 'alt_text' => $newProduct->name . ' - ' . $variantName,
+                                    'is_primary' => $imageIndex === 0, 'sort_order' => $imageIndex + 1,
+                                    'created_by' => $request->user()->id,
+                                ]);
+                            }
                         }
                     }
                 }
+
+                return $newProduct;
             });
         } catch (\Throwable $exception) {
             foreach ($storedPaths as $path) Storage::disk('public')->delete($path);
@@ -145,7 +166,35 @@ class ProductController extends Controller
             return back()->withInput()->with('error', 'Ocurrió un error al guardar el producto.');
         }
 
-        return redirect()->route('admin.products.index')->with('success', 'Producto guardado correctamente.');
+        $originCategory = $request->input('origin_category');
+        $returnSearch = $request->input('return_search');
+
+        // Determinar categoría destino
+        $targetCategory = $originCategory;
+        if (!$targetCategory || !in_array($targetCategory, ['featured', 'uncat'])) {
+            $targetCategory = $validated['category_id'] ?? $originCategory ?? $product?->categories()->first()?->id;
+        }
+
+        $redirectParams = [];
+        if ($targetCategory) {
+            $redirectParams['category'] = $targetCategory;
+        }
+        if ($returnSearch) {
+            $redirectParams['search'] = $returnSearch;
+        }
+
+        $redirectUrl = route('admin.products.index', $redirectParams);
+        if ($product) {
+            if ($targetCategory === 'featured') {
+                $redirectUrl .= '#featured-product-' . $product->id;
+            } elseif ($targetCategory === 'uncat') {
+                $redirectUrl .= '#uncat-product-' . $product->id;
+            } else {
+                $redirectUrl .= '#product-' . $product->id;
+            }
+        }
+
+        return redirect($redirectUrl)->with('success', 'Producto guardado correctamente.');
     }
 
     public function edit(Product $product): View
@@ -161,10 +210,11 @@ class ProductController extends Controller
         $validated = $request->validated();
         $storedPaths = [];
 
-        // VALIDACIÓN ESTRICTA EN EDICIÓN
+        // VALIDACIÓN EN EDICIÓN
         $nombresUsados = [];
         $deleteMedia = $validated['delete_media'] ?? [];
         $deleteVariants = $validated['delete_variants'] ?? [];
+        $totalPhotosCount = 0;
 
         // 1. Revisar variantes existentes
         if (!empty($validated['existing_variants'])) {
@@ -179,15 +229,15 @@ class ProductController extends Controller
                 }
                 $nombresUsados[] = strtolower($name);
 
-                // Validar que no se quede sin fotos
+                // Contar fotos restantes en esta variante
                 $variantModel = $product->variants()->find($id);
                 if ($variantModel) {
                     $currentMediaIds = $variantModel->media->pluck('id')->toArray();
                     $remainingMedia = array_diff($currentMediaIds, $deleteMedia);
-                    
-                    if (empty($remainingMedia) && empty($v['new_images'])) {
-                        return back()->withInput()->with('error', "La variante '$name' no puede quedarse sin fotografías. Sube al menos una o elimina la variante.");
-                    }
+                    $totalPhotosCount += count($remainingMedia);
+                }
+                if (!empty($v['new_images'])) {
+                    $totalPhotosCount += count($v['new_images']);
                 }
             }
         }
@@ -203,10 +253,14 @@ class ProductController extends Controller
                 }
                 $nombresUsados[] = strtolower($name);
 
-                if (empty($v['images'])) {
-                    return back()->withInput()->with('error', "La nueva variante '$name' debe tener al menos una fotografía.");
+                if (!empty($v['images'])) {
+                    $totalPhotosCount += count($v['images']);
                 }
             }
+        }
+
+        if ($totalPhotosCount === 0) {
+            return back()->withInput()->with('error', "El producto no puede quedarse sin fotografías. Sube al menos una fotografía.");
         }
 
         try {
@@ -239,6 +293,8 @@ class ProductController extends Controller
                         }
                         $variant->delete();
                     }
+                    // Asegurar eliminación física definitiva en la base de datos
+                    DB::table('product_variants')->whereIn('id', $deleteVariants)->delete();
                 }
 
                 if (!empty($validated['existing_variants'])) {
@@ -284,17 +340,19 @@ class ProductController extends Controller
                             'updated_by' => $request->user()->id,
                         ]);
 
-                        foreach ($variantData['images'] as $imageIndex => $image) {
-                            $path = $image->store('products/' . $product->id . '/variants/' . $variant->id, 'public');
-                            $storedPaths[] = $path;
+                        if (!empty($variantData['images'])) {
+                            foreach ($variantData['images'] as $imageIndex => $image) {
+                                $path = $image->store('products/' . $product->id . '/variants/' . $variant->id, 'public');
+                                $storedPaths[] = $path;
 
-                            $variant->media()->create([
-                                'collection' => 'gallery', 'disk' => 'public', 'path' => $path,
-                                'file_name' => $image->getClientOriginalName(), 'mime_type' => $image->getMimeType(),
-                                'size' => $image->getSize(), 'alt_text' => $product->name . ' - ' . $variantName,
-                                'is_primary' => $imageIndex === 0, 'sort_order' => $imageIndex + 1,
-                                'created_by' => $request->user()->id,
-                            ]);
+                                $variant->media()->create([
+                                    'collection' => 'gallery', 'disk' => 'public', 'path' => $path,
+                                    'file_name' => $image->getClientOriginalName(), 'mime_type' => $image->getMimeType(),
+                                    'size' => $image->getSize(), 'alt_text' => $product->name . ' - ' . $variantName,
+                                    'is_primary' => $imageIndex === 0, 'sort_order' => $imageIndex + 1,
+                                    'created_by' => $request->user()->id,
+                                ]);
+                            }
                         }
                     }
                 }
@@ -305,12 +363,130 @@ class ProductController extends Controller
             return back()->withInput()->with('error', 'Ocurrió un error al actualizar el producto.');
         }
 
-        return redirect()->route('admin.products.index')->with('success', 'Producto actualizado correctamente.');
+        $originCategory = $request->input('origin_category');
+        $returnSearch = $request->input('return_search');
+
+        // Determinar categoría destino
+        $targetCategory = $originCategory;
+        if (!$targetCategory || !in_array($targetCategory, ['featured', 'uncat'])) {
+            $targetCategory = $validated['category_id'] ?? $originCategory ?? $product->categories()->first()?->id;
+        }
+
+        $redirectParams = [];
+        if ($targetCategory) {
+            $redirectParams['category'] = $targetCategory;
+        }
+        if ($returnSearch) {
+            $redirectParams['search'] = $returnSearch;
+        }
+
+        $redirectUrl = route('admin.products.index', $redirectParams);
+        if ($targetCategory === 'featured') {
+            $redirectUrl .= '#featured-product-' . $product->id;
+        } elseif ($targetCategory === 'uncat') {
+            $redirectUrl .= '#uncat-product-' . $product->id;
+        } else {
+            $redirectUrl .= '#product-' . $product->id;
+        }
+
+        return redirect($redirectUrl)->with('success', 'Producto actualizado correctamente.');
     }
 
     public function destroy(Product $product): RedirectResponse
     {
+        $originCategory = request('origin_category');
+        $returnSearch = request('search');
+
+        // Al enviar el producto a la papelera, se marca el producto (soft delete).
+        // Las variantes se conservan asociadas para poder restaurarlo si se desea.
         $product->delete();
-        return redirect()->route('admin.products.index')->with('success', 'Producto eliminado correctamente.');
+
+        $redirectParams = [];
+        if ($originCategory) {
+            $redirectParams['category'] = $originCategory;
+        }
+        if ($returnSearch) {
+            $redirectParams['search'] = $returnSearch;
+        }
+
+        $redirectUrl = route('admin.products.index', $redirectParams);
+        if ($originCategory) {
+            $redirectUrl .= '#category-' . $originCategory;
+        }
+
+        return redirect($redirectUrl)->with('success', 'Producto enviado a la papelera de reciclaje.');
+    }
+
+    public function trash(\Illuminate\Http\Request $request): \Illuminate\View\View
+    {
+        $search = $request->search;
+
+        $trashedProducts = Product::onlyTrashed()
+            ->with(['categories', 'variants.media'])
+            ->when($search, fn($q) => $q->search($search))
+            ->latest('deleted_at')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('admin.products.trash', compact('trashedProducts'));
+    }
+
+    public function restore($id): RedirectResponse
+    {
+        $product = Product::onlyTrashed()->findOrFail($id);
+        $product->restore();
+
+        return back()->with('success', "El producto '{$product->name}' fue restaurado con éxito.");
+    }
+
+    public function forceDelete($id): RedirectResponse
+    {
+        $product = Product::onlyTrashed()->findOrFail($id);
+        $name = $product->name;
+
+        // 1. Eliminar archivos de fotos físicos en storage
+        Storage::disk('public')->deleteDirectory('products/' . $product->id);
+
+        // 2. Eliminar relaciones y registros de la BD definitivamente
+        DB::transaction(function () use ($product) {
+            foreach ($product->variants as $variant) {
+                $variant->media()->delete();
+                $variant->delete();
+            }
+
+            $product->media()->delete();
+            $product->categories()->detach();
+            $product->brands()->detach();
+            $product->forceDelete();
+        });
+
+        return back()->with('success', "El producto '{$name}' y sus fotografías fueron eliminados definitivamente.");
+    }
+
+    public function emptyTrash(): RedirectResponse
+    {
+        $trashed = Product::onlyTrashed()->get();
+        $total = $trashed->count();
+
+        if ($total === 0) {
+            return back()->with('error', 'La papelera ya está vacía.');
+        }
+
+        foreach ($trashed as $product) {
+            Storage::disk('public')->deleteDirectory('products/' . $product->id);
+
+            DB::transaction(function () use ($product) {
+                foreach ($product->variants as $variant) {
+                    $variant->media()->delete();
+                    $variant->delete();
+                }
+                $product->media()->delete();
+                $product->categories()->detach();
+                $product->brands()->detach();
+                $product->forceDelete();
+            });
+        }
+
+        return back()->with('success', "Se eliminaron {$total} productos definitivamente de la base de datos.");
     }
 }

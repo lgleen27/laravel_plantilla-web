@@ -132,12 +132,12 @@
                                         </div>
                                     </div>
                                 </template>
-                                <div x-show="variant.media.length === 0" class="text-sm text-rose-500 italic mt-2">Sin fotos. Sube nuevas imágenes.</div>
+                                <div x-show="variant.media.length === 0" class="text-sm text-sky-600 italic mt-2">Sin fotos propias (utilizará las fotografías de la primera variante).</div>
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-slate-700">Añadir MÁS fotos a esta variante</label>
+                            <label class="block text-sm font-medium text-slate-700">Añadir MÁS fotos a esta variante <span class="text-xs text-slate-400 font-normal">(Opcional)</span></label>
                             <input 
                                 type="file" 
                                 x-bind:name="'existing_variants[' + variant.id + '][new_images][]'" 
@@ -170,8 +170,23 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-slate-700">Fotografías Nuevas <span class="text-rose-500">*</span></label>
-                            <input type="file" x-bind:name="'variants[' + index + '][images][]'" multiple accept="image/*" class="mt-2 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100" required />
+                            <label class="block text-sm font-medium text-slate-700">
+                                Fotografías <span x-show="existingVariants.length === 0 && index === 0" class="text-rose-500">*</span>
+                            </label>
+                            <input 
+                                type="file" 
+                                x-bind:name="'variants[' + index + '][images][]'" 
+                                multiple 
+                                accept="image/*" 
+                                class="mt-2 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100" 
+                                :required="existingVariants.length === 0 && index === 0" 
+                            />
+                            <p class="text-xs text-slate-500 mt-1" x-show="existingVariants.length > 0 || index > 0">
+                                💡 <strong>Opcional:</strong> Si no subes fotos, esta variante utilizará automáticamente las fotos de la primera variante.
+                            </p>
+                            <p class="text-xs text-slate-500 mt-1" x-show="existingVariants.length === 0 && index === 0">
+                                Sube al menos una fotografía principal. Las variantes que agregues después podrán compartir estas fotos sin necesidad de volver a subirlas.
+                            </p>
                         </div>
                     </div>
                     
@@ -210,7 +225,22 @@
         <button type="submit" class="px-6 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-medium rounded-lg shadow-sm transition-colors">
             {{ $submitLabel }}
         </button>
-        <a href="{{ route('admin.products.index') }}" class="text-sm font-medium text-slate-500 hover:text-slate-800 transition">Cancelar</a>
+        @php
+            $cancelCat = request('origin_category', isset($product) ? ($product->categories->first()?->id ?? null) : null);
+            $cancelSearch = request('search', request('return_search'));
+            $cancelParams = array_filter(['category' => $cancelCat, 'search' => $cancelSearch]);
+            $cancelUrl = route('admin.products.index', $cancelParams);
+            if ($cancelCat) {
+                if ($cancelCat === 'featured') {
+                    $cancelUrl .= (isset($product->id) ? '#featured-product-' . $product->id : '#category-featured');
+                } elseif ($cancelCat === 'uncat') {
+                    $cancelUrl .= (isset($product->id) ? '#uncat-product-' . $product->id : '#category-uncat');
+                } else {
+                    $cancelUrl .= (isset($product->id) ? '#product-' . $product->id : '#category-' . $cancelCat);
+                }
+            }
+        @endphp
+        <a href="{{ $cancelUrl }}" class="text-sm font-medium text-slate-500 hover:text-slate-800 transition">Cancelar</a>
     </div>
 </div>
 

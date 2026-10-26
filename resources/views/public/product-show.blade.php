@@ -7,7 +7,7 @@
         $variants = $product->variants;
         $initialVariant = null;
 
-        $previewVariant = $variants->first();
+        $previewVariant = $variants->first(fn ($v) => $v->media->isNotEmpty()) ?? $variants->first();
         $previewImages = $previewVariant?->media ?? collect();
         $mainImage = $previewImages->first();
 
@@ -139,7 +139,11 @@
                             <div class="variant-list" id="variantList">
                                 @foreach($variants as $variant)
                                     @php
-                                        $variantImages = $variant->media
+                                        $mediaCollection = $variant->media->isNotEmpty()
+                                            ? $variant->media
+                                            : $previewImages;
+
+                                        $variantImages = $mediaCollection
                                             ->map(fn ($image) => [
                                                 'url' => Storage::disk($image->disk)->url($image->path),
                                                 'alt' => $product->name . ' - ' . ($variant->name ?: $variant->sku),

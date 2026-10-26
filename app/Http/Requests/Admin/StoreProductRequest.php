@@ -25,10 +25,13 @@ class StoreProductRequest extends FormRequest
             ],
             'status' => ['required', Rule::in(['draft', 'active', 'inactive'])],
             'is_featured' => ['required', 'boolean'],
+            'origin_category' => ['nullable'],
+            'return_search' => ['nullable', 'string'],
             
             // Validaciones del nuevo formato simplificado
             'variants' => ['nullable', 'array', 'max:20'],
             'variants.*.name' => ['nullable', 'string', 'max:180'],
+            'variants.*.sku' => ['nullable', 'string', 'max:120'],
             'variants.*.images' => ['nullable', 'array', 'max:10'],
             'variants.*.images.*' => [
                 'image',

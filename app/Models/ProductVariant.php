@@ -6,12 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class ProductVariant extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
         'product_id',
@@ -53,7 +52,7 @@ class ProductVariant extends Model
                 $count = 1;
                 
                 // Genera slugs únicos: unica, unica-1, unica-2, etc.
-                while (ProductVariant::where('slug', $slug)->withTrashed()->exists()) {
+                while (ProductVariant::where('slug', $slug)->exists()) {
                     $slug = $baseSlug . '-' . $count;
                     $count++;
                 }
@@ -74,6 +73,22 @@ class ProductVariant extends Model
             ->orderBy('collection')
             ->orderByDesc('is_primary')
             ->orderBy('sort_order');
+    }
+
+    public function getEffectiveMediaAttribute()
+    {
+        if ($this->relationLoaded('media') && $this->media->isNotEmpty()) {
+            return $this->media;
+        }
+
+        if ($this->relationLoaded('product') && $this->product) {
+            $fallback = $this->product->variants->first(fn ($v) => $v->media->isNotEmpty());
+            if ($fallback) {
+                return $fallback->media;
+            }
+        }
+
+        return $this->media;
     }
 
     public function isAvailable(): bool

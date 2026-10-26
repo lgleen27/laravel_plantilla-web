@@ -22,6 +22,8 @@ class UpdateProductRequest extends FormRequest
             'category_id' => ['required', 'integer', Rule::exists('categories', 'id')->withoutTrashed()],
             'status' => ['required', Rule::in(['draft', 'active', 'inactive'])],
             'is_featured' => ['required', 'boolean'],
+            'origin_category' => ['nullable'],
+            'return_search' => ['nullable', 'string'],
 
             'delete_variants' => ['nullable', 'array'],
             'delete_variants.*' => ['integer'],

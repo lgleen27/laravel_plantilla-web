@@ -155,7 +155,7 @@
                 <div class="product-grid">
                     @foreach($featuredProducts as $product)
                         @php
-                            $firstVariant = $product->variants->first();
+                            $firstVariant = $product->variants->first(fn ($v) => $v->media->isNotEmpty()) ?? $product->variants->first();
                             $firstImage = $firstVariant?->media->first();
 
                             $price = $firstVariant?->price ?? $product->price;

@@ -64,9 +64,9 @@ class CatalogController extends Controller
             ->where('status', '!=', 'draft')
             ->where('is_quotable', true);
 
-        // Búsqueda por nombre
+        // Búsqueda por nombre, SKU o variantes
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->search($request->search);
         }
 
         // Filtro por categoría

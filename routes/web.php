@@ -82,6 +82,23 @@ Route::middleware(['auth', 'role:super-admin|admin|editor|viewer'])
             ->middleware('permission:products.create')
             ->name('products.create');
 
+        // Papelera de Productos
+        Route::get('products/trash', [ProductController::class, 'trash'])
+            ->middleware('permission:products.view')
+            ->name('products.trash');
+
+        Route::delete('products/trash/empty', [ProductController::class, 'emptyTrash'])
+            ->middleware('permission:products.delete')
+            ->name('products.trash.empty');
+
+        Route::post('products/{id}/restore', [ProductController::class, 'restore'])
+            ->middleware('permission:products.delete')
+            ->name('products.restore');
+
+        Route::delete('products/{id}/force-delete', [ProductController::class, 'forceDelete'])
+            ->middleware('permission:products.delete')
+            ->name('products.force-delete');
+
         Route::post('products', [ProductController::class, 'store'])
             ->middleware('permission:products.create')
             ->name('products.store');

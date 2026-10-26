@@ -45,12 +45,27 @@ class CategoryController extends Controller
             'is_active' => ['nullable', 'boolean'],
         ]);
 
+        $slug = Str::slug($validated['name']);
+        if ($slug === '') {
+            $slug = 'categoria';
+        }
+
+        // Purgar de forma definitiva cualquier registro residual previo que haya quedado con deleted_at
+        \Illuminate\Support\Facades\DB::table('categories')
+            ->where('slug', $slug)
+            ->whereNotNull('deleted_at')
+            ->delete();
+
+        if (Category::where('slug', $slug)->exists()) {
+            return back()->withInput()->withErrors(['name' => 'Ya existe una categoría con este nombre.']);
+        }
+
         Category::create([
             'name' => $validated['name'],
-            'slug' => Str::slug($validated['name']),
+            'slug' => $slug,
             'is_active' => $request->boolean('is_active'),
-            'parent_id' => null, // Todas son principales ahora
-            'sort_order' => Category::max('sort_order') + 1,
+            'parent_id' => null, // Todas son principales
+            'sort_order' => (Category::max('sort_order') ?? 0) + 1,
         ]);
 
         return redirect()->route('admin.categories.index')->with('success', 'Categoría creada correctamente.');
@@ -63,9 +78,25 @@ class CategoryController extends Controller
             'is_active' => ['nullable', 'boolean'],
         ]);
 
+        $slug = Str::slug($validated['name']);
+        if ($slug === '') {
+            $slug = 'categoria';
+        }
+
+        // Purgar cualquier registro residual con deleted_at
+        \Illuminate\Support\Facades\DB::table('categories')
+            ->where('slug', $slug)
+            ->where('id', '!=', $category->id)
+            ->whereNotNull('deleted_at')
+            ->delete();
+
+        if (Category::where('slug', $slug)->where('id', '!=', $category->id)->exists()) {
+            return back()->withInput()->withErrors(['name' => 'Ya existe otra categoría con este nombre.']);
+        }
+
         $category->update([
             'name' => $validated['name'],
-            'slug' => Str::slug($validated['name']),
+            'slug' => $slug,
             'is_active' => $request->boolean('is_active'),
         ]);
 
@@ -79,7 +110,9 @@ class CategoryController extends Controller
                 ->with('error', 'No puedes eliminar esta categoría porque tiene productos asignados.');
         }
 
+        // Borrado definitivo físico de la base de datos (Hard Delete)
         $category->delete();
-        return redirect()->route('admin.categories.index')->with('success', 'Categoría eliminada.');
+
+        return redirect()->route('admin.categories.index')->with('success', 'Categoría eliminada definitivamente.');
     }
 }

@@ -209,4 +209,26 @@ class Product extends Model
 
         return $this->stock > 0 || $this->allow_backorder;
     }
+
+    /**
+     * Scope para búsqueda avanzada de productos por nombre, SKU o variantes (nombre, SKU y código de barras).
+     */
+    public function scopeSearch($query, ?string $search)
+    {
+        if (blank($search)) {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('sku', 'like', "%{$search}%")
+              ->orWhereHas('variants', function ($vq) use ($search) {
+                  $vq->where(function ($sub) use ($search) {
+                      $sub->where('name', 'like', "%{$search}%")
+                          ->orWhere('sku', 'like', "%{$search}%")
+                          ->orWhere('barcode', 'like', "%{$search}%");
+                  });
+              });
+        });
+    }
 }
