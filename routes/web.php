@@ -82,6 +82,10 @@ Route::middleware(['auth', 'role:super-admin|admin|editor|viewer'])
             ->middleware('permission:products.create')
             ->name('products.create');
 
+        Route::get('products/export-missing-images', [ProductController::class, 'exportMissingImages'])
+            ->middleware('permission:products.view')
+            ->name('products.export-missing-images');
+
         // Papelera de Productos
         Route::get('products/trash', [ProductController::class, 'trash'])
             ->middleware('permission:products.view')

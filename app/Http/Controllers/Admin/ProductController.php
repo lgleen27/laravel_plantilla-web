@@ -17,23 +17,40 @@ class ProductController extends Controller
     public function index(\Illuminate\Http\Request $request): \Illuminate\View\View
     {
         $search = $request->search;
+        $onlyWithImages = $request->boolean('with_images');
+
+        $imageFilter = function ($query) {
+            $query->where(function ($sub) {
+                $sub->whereHas('variants.media')
+                    ->orWhereHas('media');
+            });
+        };
 
         // 1. Productos Destacados (La nueva "Categoría")
         $featuredProducts = \App\Models\Product::where('is_featured', true)
             ->with('variants')
             ->when($search, fn($q) => $q->search($search))
+            ->when($onlyWithImages, $imageFilter)
             ->orderBy('featured_sort_order')
             ->get();
 
-        // 2. Categorías Normales (Solo categorías con productos que coincidan al buscar por nombre, SKU o variantes)
-        $categories = \App\Models\Category::when($search, function ($query) use ($search) {
-                $query->whereHas('products', function ($q) use ($search) {
-                    $q->search($search);
+        // 2. Categorías Normales (Solo categorías con productos que coincidan al buscar por nombre, SKU o variantes y filtro de fotos)
+        $categories = \App\Models\Category::when($search || $onlyWithImages, function ($query) use ($search, $onlyWithImages, $imageFilter) {
+                $query->whereHas('products', function ($q) use ($search, $onlyWithImages, $imageFilter) {
+                    if ($search) {
+                        $q->search($search);
+                    }
+                    if ($onlyWithImages) {
+                        $imageFilter($q);
+                    }
                 });
             })
-            ->with(['products' => function ($query) use ($search) {
+            ->with(['products' => function ($query) use ($search, $onlyWithImages, $imageFilter) {
                 if ($search) {
                     $query->search($search);
+                }
+                if ($onlyWithImages) {
+                    $imageFilter($query);
                 }
                 $query->orderBy('sort_order');
             }, 'products.variants'])
@@ -44,6 +61,7 @@ class ProductController extends Controller
         $uncategorized = \App\Models\Product::doesntHave('categories')
             ->with('variants')
             ->when($search, fn($q) => $q->search($search))
+            ->when($onlyWithImages, $imageFilter)
             ->orderBy('sort_order')
             ->get();
 
@@ -51,6 +69,35 @@ class ProductController extends Controller
         $trashedCount = \App\Models\Product::onlyTrashed()->count();
 
         return view('admin.products.index', compact('categories', 'uncategorized', 'featuredProducts', 'trashedCount'));
+    }
+
+    /**
+     * Exporta en formato TXT o JSON los productos y variantes que no tienen imágenes.
+     */
+    public function exportMissingImages(\Illuminate\Http\Request $request, \App\Services\ProductImageAuditService $auditService)
+    {
+        $format = strtolower((string) $request->query('format', 'txt'));
+        $includeDrafts = $request->boolean('drafts');
+        $report = $auditService->getAuditReport($includeDrafts);
+        $timestamp = now()->format('Y-m-d_H-i');
+
+        if ($format === 'json') {
+            $content = $auditService->formatAsJson($report);
+            $filename = "productos_sin_imagen_{$timestamp}.json";
+
+            return response($content, 200, [
+                'Content-Type' => 'application/json; charset=utf-8',
+                'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            ]);
+        }
+
+        $content = $auditService->formatAsTxt($report);
+        $filename = "productos_sin_imagen_{$timestamp}.txt";
+
+        return response($content, 200, [
+            'Content-Type' => 'text/plain; charset=utf-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
     }
 
     public function updateOrder(\Illuminate\Http\Request $request)

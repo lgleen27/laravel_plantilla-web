@@ -58,16 +58,71 @@
                     <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-rose-100 text-rose-700">{{ $trashedCount }}</span>
                 @endif
             </a>
+
+            @php
+                $isFilteredWithImages = request()->boolean('with_images');
+                $toggleImagesUrl = route('admin.products.index', array_merge(
+                    request()->except(['page']),
+                    ['with_images' => $isFilteredWithImages ? null : '1']
+                ));
+            @endphp
+            <a href="{{ $toggleImagesUrl }}"
+               class="h-10 px-4 inline-flex items-center justify-center gap-2 font-medium rounded-lg border transition {{ $isFilteredWithImages ? 'bg-sky-600 text-white border-sky-600 shadow-sm' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200' }}"
+               title="{{ $isFilteredWithImages ? 'Filtro activo: mostrando solo productos con foto en el panel. Clic para ver todos.' : 'Clic para filtrar y ver solo productos con foto en el panel administrativo.' }}">
+                <svg class="w-4 h-4 {{ $isFilteredWithImages ? 'text-white' : 'text-slate-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <span>{{ $isFilteredWithImages ? 'Filtro: Solo con foto' : 'Solo con foto' }}</span>
+                @if($isFilteredWithImages)
+                    <span class="w-2 h-2 rounded-full bg-white ring-2 ring-white/50"></span>
+                @endif
+            </a>
+
+            <!-- Exportar productos sin imagen -->
+            <div x-data="{ open: false }" class="relative inline-block text-left">
+                <button @click="open = !open" 
+                        type="button" 
+                        class="h-10 px-4 inline-flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg border border-slate-200 transition" 
+                        title="Exportar lista de productos y variantes sin fotos">
+                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span>Reporte Sin Foto</span>
+                    <svg class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+
+                <div x-show="open" 
+                     @click.away="open = false" 
+                     x-transition 
+                     class="absolute left-0 mt-2 w-52 rounded-xl shadow-lg bg-white ring-1 ring-black/5 z-20 divide-y divide-slate-100 py-1"
+                     style="display: none;">
+                    <a href="{{ route('admin.products.export-missing-images', ['format' => 'txt']) }}" 
+                       @click="open = false"
+                       class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition">
+                        <span class="px-1.5 py-0.5 text-xs font-bold bg-slate-200 text-slate-700 rounded">TXT</span>
+                        <span>Descargar texto (.txt)</span>
+                    </a>
+                    <a href="{{ route('admin.products.export-missing-images', ['format' => 'json']) }}" 
+                       @click="open = false"
+                       class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition">
+                        <span class="px-1.5 py-0.5 text-xs font-bold bg-amber-100 text-amber-800 rounded">JSON</span>
+                        <span>Descargar datos (.json)</span>
+                    </a>
+                </div>
+            </div>
         </div>
 
         <!-- Barra de Búsqueda -->
         <form action="{{ route('admin.products.index') }}" method="GET" class="w-full md:w-auto flex gap-2">
+            @if(request()->boolean('with_images'))
+                <input type="hidden" name="with_images" value="1">
+            @endif
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Buscar producto o SKU..." 
                    class="w-full md:w-72 rounded-lg border-slate-300 focus:border-sky-500 focus:ring-sky-500 shadow-sm">
             <button type="submit" class="px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-lg transition">
                 Buscar
             </button>
-            @if(request('search'))
+            @if(request('search') || request()->boolean('with_images'))
                 <a href="{{ route('admin.products.index') }}" class="px-3 py-2 text-slate-500 hover:text-rose-500">Limpiar</a>
             @endif
         </form>

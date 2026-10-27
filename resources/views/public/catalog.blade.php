@@ -57,24 +57,48 @@
                 </p>
 
                 <div class="product-grid">
-                    @foreach($products as $product)
+                    @foreach($products as $variant)
                         @php
-                            $firstVariant = $product->variants->first(fn ($v) => $v->media->isNotEmpty()) ?? $product->variants->first();
-                            $firstImage = $firstVariant?->media->first();
+                            $product = $variant->product;
+                            if (!$product) continue;
 
-                            $price = $firstVariant?->price ?? $product->price;
-                            $hasPrice = $price !== null && $price > 0;
-                            $isAvailable = $product->isAvailable();
+                            // Foto de la variante (o fallback a fotos del producto/otra variante)
+                            $variantImage = $variant->media->first();
+                            if (!$variantImage && $product->variants) {
+                                $fallbackVariant = $product->variants->first(fn ($v) => $v->media->isNotEmpty());
+                                $variantImage = $fallbackVariant?->media->first();
+                            }
+                            if (!$variantImage && $product->media) {
+                                $variantImage = $product->media->first();
+                            }
 
-                            $imageUrl = $firstImage
-                                ? \Storage::disk($firstImage->disk)->url($firstImage->path)
+                            $imageUrl = $variantImage
+                                ? \Storage::disk($variantImage->disk)->url($variantImage->path)
                                 : 'https://via.placeholder.com/600x450/e0f2fe/0369a1?text=Sin+Imagen';
+
+                            $price = $variant->price ?? $product->price;
+                            $hasPrice = $price !== null && $price > 0;
+                            $isAvailable = $variant->isAvailable() && $product->status === 'active';
+
+                            // Título limpio y descriptivo
+                            $variantName = trim($variant->name ?? '');
+                            $isUniqueVariant = blank($variantName)
+                                || in_array(mb_strtolower($variantName), ['única', 'unica', 'estándar', 'estandar', 'default'])
+                                || ($product->variants->count() <= 1);
+
+                            $displayName = $isUniqueVariant
+                                ? $product->name
+                                : (str_contains(mb_strtolower($product->name), mb_strtolower($variantName))
+                                    ? $product->name
+                                    : "{$product->name} - {$variantName}");
+
+                            $displaySku = $variant->sku ?: $product->sku;
                         @endphp
 
                         <article class="product-card">
-                            <a href="{{ route('public.product.show', $product->slug) }}">
+                            <a href="{{ route('public.product.show', ['product' => $product->slug, 'variant' => $variant->id]) }}">
                                 <div class="product-image">
-                                    <img src="{{ $imageUrl }}" alt="{{ $product->name }}" loading="lazy">
+                                    <img src="{{ $imageUrl }}" alt="{{ $displayName }}" loading="lazy" decoding="async">
 
                                     @if($product->is_featured)
                                         <span class="product-badge">❄ Destacado</span>
@@ -91,7 +115,7 @@
                                     </p>
 
                                     <h2 class="product-title">
-                                        {{ $product->name }}
+                                        {{ $displayName }}
                                     </h2>
 
                                     <p class="product-description">
@@ -101,7 +125,7 @@
                                     <div class="product-footer">
                                         <div>
                                             <span class="price-label">
-                                                {{ $hasPrice ? 'Precio desde' : 'Disponibilidad' }}
+                                                {{ $hasPrice ? 'Precio' : 'Disponibilidad' }}
                                             </span>
 
                                             @if($hasPrice)

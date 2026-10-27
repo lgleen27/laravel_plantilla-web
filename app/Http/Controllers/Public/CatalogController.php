@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductVariant;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 
 class CatalogController extends Controller
@@ -15,7 +17,7 @@ class CatalogController extends Controller
     public function index()
     {
         // Productos destacados activos
-        $featuredProducts = Product::with([
+        $featuredQuery = Product::with([
             'categories',
             'variants' => function ($query) {
                 $query->where('status', 'active')
@@ -30,8 +32,17 @@ class CatalogController extends Controller
         ])
             ->where('is_featured', true)
             ->where('status', '!=', 'draft')
-            ->where('is_quotable', true)
-            ->orderBy('featured_sort_order', 'asc') 
+            ->where('is_quotable', true);
+
+        // Si en configuraciones se activó ocultar productos sin imagen
+        if (Setting::get('catalog_only_with_images', '0') == '1') {
+            $featuredQuery->where(function ($subQuery) {
+                $subQuery->whereHas('variants.media')
+                    ->orWhereHas('media');
+            });
+        }
+
+        $featuredProducts = $featuredQuery->orderBy('featured_sort_order', 'asc') 
             ->limit(6)
             ->get();
 
@@ -44,48 +55,110 @@ class CatalogController extends Controller
     }
 
     /**
-     * Catálogo de productos
+     * Catálogo de productos (mostrando variantes como registros individuales)
      */
     public function catalog(Request $request)
     {
-        $query = Product::with([
-            'categories',
-            'variants' => function ($query) {
-                $query->where('status', 'active')
-                    ->with([
+        // Asegurar que cualquier producto activo sin variantes tenga al menos la variante por defecto
+        if (Product::where('status', '!=', 'draft')->where('is_quotable', true)->whereDoesntHave('variants')->exists()) {
+            Product::where('status', '!=', 'draft')
+                ->where('is_quotable', true)
+                ->whereDoesntHave('variants')
+                ->each(function ($p) {
+                    $p->variants()->create([
+                        'name' => 'Única',
+                        'sku' => $p->sku,
+                        'status' => 'active',
+                        'sort_order' => 1,
+                    ]);
+                });
+        }
+
+        // Consultamos las variantes activas con sus productos asociados
+        $query = ProductVariant::query()
+            ->select('product_variants.*')
+            ->join('products', 'products.id', '=', 'product_variants.product_id')
+            ->where('product_variants.status', 'active')
+            ->whereNull('product_variants.deleted_at')
+            ->where('products.status', '!=', 'draft')
+            ->where('products.is_quotable', true)
+            ->whereNull('products.deleted_at')
+            ->with([
+                'product' => function ($productQuery) {
+                    $productQuery->with([
+                        'categories',
                         'media' => function ($mediaQuery) {
                             $mediaQuery->where('collection', 'gallery')
                                 ->orderBy('sort_order')
                                 ->orderBy('id');
                         },
+                        'variants' => function ($variantsQuery) {
+                            $variantsQuery->where('status', 'active')
+                                ->with([
+                                    'media' => function ($mediaQuery) {
+                                        $mediaQuery->where('collection', 'gallery')
+                                            ->orderBy('sort_order')
+                                            ->orderBy('id');
+                                    },
+                                ]);
+                        },
                     ]);
-            },
-        ])
-            ->where('status', '!=', 'draft')
-            ->where('is_quotable', true);
+                },
+                'media' => function ($mediaQuery) {
+                    $mediaQuery->where('collection', 'gallery')
+                        ->orderBy('sort_order')
+                        ->orderBy('id');
+                },
+            ]);
 
-        // Búsqueda por nombre, SKU o variantes
+        // Búsqueda por término (nombre de producto, variante, SKU o código de barras)
         if ($request->filled('search')) {
-            $query->search($request->search);
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('products.name', 'like', "%{$search}%")
+                  ->orWhere('products.sku', 'like', "%{$search}%")
+                  ->orWhere('product_variants.name', 'like', "%{$search}%")
+                  ->orWhere('product_variants.sku', 'like', "%{$search}%")
+                  ->orWhere('product_variants.barcode', 'like', "%{$search}%");
+            });
         }
 
         // Filtro por categoría
         if ($request->filled('category')) {
-            $query->whereHas('categories', function ($q) use ($request) {
-                $q->where('categories.id', $request->category);
+            $categoryId = $request->category;
+            $query->whereHas('product.categories', function ($q) use ($categoryId) {
+                $q->where('categories.id', $categoryId);
             });
         }
 
-        $products = $query->orderBy('name')->paginate(12)->withQueryString();
+        // Filtro por configuración administrativa en la base de datos: Ocultar productos sin imagen
+        if (Setting::get('catalog_only_with_images', '0') == '1') {
+            $query->where(function ($q) {
+                $q->whereHas('media')
+                  ->orWhereHas('product.media')
+                  ->orWhereHas('product.variants.media');
+            });
+        }
+
+        $products = $query->orderBy('products.name')
+            ->orderBy('product_variants.sort_order')
+            ->orderBy('product_variants.name')
+            ->paginate(12)
+            ->withQueryString();
 
         // Categorías para el filtro
         $categories = Category::where('is_active', true)
             ->orderBy('name')
             ->get();
 
-        // Cargar categoría primaria manualmente para cada producto
-        foreach ($products as $product) {
-            $product->setRelation('primaryCategory', $product->categories->firstWhere('pivot.is_primary', true) ?? $product->categories->first());
+        // Cargar categoría primaria para cada producto
+        foreach ($products as $variant) {
+            $product = $variant->product;
+            if ($product && ! $product->relationLoaded('primaryCategory')) {
+                $primaryCategory = $product->categories->firstWhere('pivot.is_primary', true)
+                    ?? $product->categories->first();
+                $product->setRelation('primaryCategory', $primaryCategory);
+            }
         }
 
         return view('public.catalog', compact('products', 'categories'));

@@ -102,6 +102,8 @@
                             <img class="brand-logo"
                                 src="{{ Storage::disk('public')->url('branding/MYLlogo.png') }}"
                                 alt="Logo de Mueblería Liz y Congela"
+                                loading="lazy"
+                                decoding="async"
                             >
                         </span>
 

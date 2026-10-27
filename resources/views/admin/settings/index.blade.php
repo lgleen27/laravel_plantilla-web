@@ -73,6 +73,20 @@
                 </div>
                 
                 <div class="mt-6 border-t border-slate-100 pt-6">
+                    <h4 class="font-bold text-slate-800 mb-2">Visibilidad del Catálogo Público</h4>
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="hidden" name="catalog_only_with_images" value="0">
+                            <input type="checkbox" name="catalog_only_with_images" value="1" {{ ($settings['catalog_only_with_images'] ?? '0') == '1' ? 'checked' : '' }} class="mt-1 w-5 h-5 text-sky-600 rounded border-slate-300 focus:ring-sky-500">
+                            <div>
+                                <span class="block text-sm font-semibold text-slate-800">Ocultar productos sin imagen en el catálogo público (mostrar solo productos con fotos)</span>
+                                <span class="block text-xs text-slate-500 mt-0.5">Al activar esta casilla, los clientes que visiten la tienda no verán productos que carezcan de fotografías.</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mt-6 border-t border-slate-100 pt-6">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Google Maps (Código Iframe)</label>
                     <textarea name="google_maps_iframe" rows="4" class="w-full rounded-lg border-slate-300 focus:border-sky-500 focus:ring-sky-500 shadow-sm font-mono text-sm" placeholder='<iframe src="https://www.google.com/maps/embed?pb=..."></iframe>'>{{ $settings['google_maps_iframe'] ?? '' }}</textarea>
                     <p class="text-xs text-slate-500 mt-1">Ve a Google Maps, busca tu negocio, dale a "Compartir" -> "Insertar un mapa" y pega el código HTML aquí.</p>

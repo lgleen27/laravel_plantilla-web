@@ -170,7 +170,7 @@
                         <article class="product-card">
                             <a href="{{ route('public.product.show', $product->slug) }}">
                                 <div class="product-image">
-                                    <img src="{{ $imageUrl }}" alt="{{ $product->name }}" loading="lazy">
+                                    <img src="{{ $imageUrl }}" alt="{{ $product->name }}" loading="lazy" decoding="async">
 
                                     @if($product->is_featured)
                                         <span class="product-badge">
