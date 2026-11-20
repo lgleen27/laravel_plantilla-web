@@ -54,7 +54,8 @@ class ProductController extends Controller
                 }
                 $query->orderBy('sort_order');
             }, 'products.variants'])
-            ->orderBy('name')
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('name', 'asc')
             ->get();
 
         // 3. Sin categoría
@@ -121,7 +122,10 @@ class ProductController extends Controller
 
     public function create(): View
     {
-        $categories = Category::where('is_active', true)->orderBy('name')->get();
+        $categories = Category::where('is_active', true)
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('name', 'asc')
+            ->get();
         return view('admin.products.create', compact('categories'));
     }
 
@@ -162,6 +166,7 @@ class ProductController extends Controller
                     'sku' => $validated['sku'] ?? null,
                     'description' => $validated['description'] ?? null,
                     'status' => $validated['status'],
+                    'sort_order' => $request->filled('sort_order') ? (int) $request->sort_order : null,
                     'is_featured' => (bool) ($validated['is_featured'] ?? false),
                     'is_quotable' => true,
                     'track_stock' => false,
@@ -247,7 +252,10 @@ class ProductController extends Controller
     public function edit(Product $product): View
     {
         $product->load('categories', 'variants.media');
-        $categories = Category::where('is_active', true)->orderBy('name')->get();
+        $categories = Category::where('is_active', true)
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('name', 'asc')
+            ->get();
 
         return view('admin.products.edit', compact('product', 'categories'));
     }
@@ -317,6 +325,7 @@ class ProductController extends Controller
                     'sku' => $validated['sku'] ?? null,
                     'description' => $validated['description'] ?? null,
                     'status' => $validated['status'],
+                    'sort_order' => $request->filled('sort_order') ? (int) $request->sort_order : $product->sort_order,
                     'is_featured' => (bool) ($validated['is_featured'] ?? false),
                     'updated_by' => $request->user()->id,
                 ]);

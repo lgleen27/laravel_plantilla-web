@@ -22,6 +22,9 @@
             <button type="button" @click="activeTab = 'hero'" :class="{'bg-white border-b-2 border-sky-600 text-sky-700 font-bold': activeTab === 'hero', 'text-slate-500 hover:text-slate-700 font-medium': activeTab !== 'hero'}" class="px-6 py-4 text-sm transition-colors whitespace-nowrap">
                 Panel Principal
             </button>
+            <button type="button" @click="activeTab = 'bento'" :class="{'bg-white border-b-2 border-sky-600 text-sky-700 font-bold': activeTab === 'bento', 'text-slate-500 hover:text-slate-700 font-medium': activeTab !== 'bento'}" class="px-6 py-4 text-sm transition-colors whitespace-nowrap">
+                Recuadros de Categorías
+            </button>
             <button type="button" @click="activeTab = 'footer'" :class="{'bg-white border-b-2 border-sky-600 text-sky-700 font-bold': activeTab === 'footer', 'text-slate-500 hover:text-slate-700 font-medium': activeTab !== 'footer'}" class="px-6 py-4 text-sm transition-colors whitespace-nowrap">
                 Footer y Horarios
             </button>
@@ -31,7 +34,7 @@
         </div>
 
         <!-- Formulario -->
-        <form method="POST" action="{{ route('admin.settings.update') }}" class="p-6">
+        <form method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data" class="p-6">
             @csrf
 
             <!-- Pestaña: General -->
@@ -114,6 +117,134 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Descripción corta (Debajo del título)</label>
                     <textarea name="hero_description" rows="3" class="w-full rounded-lg border-slate-300 focus:border-sky-500 focus:ring-sky-500 shadow-sm">{{ $settings['hero_description'] ?? 'Desde Mexticacán, Jalisco, "El Pueblo de los Paleteros". Encuentra congeladores, refrigeradores comerciales, neverías y mobiliario de alta durabilidad para tu negocio y tu hogar.' }}</textarea>
+                </div>
+            </div>
+
+            <!-- Pestaña: Recuadros de Categorías -->
+            <div x-show="activeTab === 'bento'" class="space-y-8" style="display: none;">
+                <div class="border-b border-slate-200 pb-4">
+                    <h3 class="text-base font-bold text-slate-800">Sección de Categorías Principales (Cuadrícula 2x2)</h3>
+                    <p class="text-xs text-slate-500 mt-1">Configura el título de la sección y el contenido visual (textos, colores, imágenes y enlaces) de cada uno de los 4 recuadros destacados de la página de inicio.</p>
+                </div>
+
+                <!-- Títulos de la sección -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Título de la Sección</label>
+                        <input type="text" name="bento_section_title" value="{{ $settings['bento_section_title'] ?? 'Explora por Categorías ❄' }}" class="w-full rounded-lg border-slate-300 focus:border-sky-500 focus:ring-sky-500 shadow-sm text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Subtítulo / Descripción</label>
+                        <input type="text" name="bento_section_subtitle" value="{{ $settings['bento_section_subtitle'] ?? 'Descubre nuestra gama de congelación comercial y mobiliario diseñados para negocios exigentes y para el hogar.' }}" class="w-full rounded-lg border-slate-300 focus:border-sky-500 focus:ring-sky-500 shadow-sm text-sm">
+                    </div>
+                </div>
+
+                <!-- Las 4 Tarjetas -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    @php
+                        $defaultCards = [
+                            1 => ['tag' => 'Nuevas Marcas / Ofertas', 'title' => 'Congeladores Comerciales', 'color' => 'sky', 'fallback_img' => 'categories/destacada.png'],
+                            2 => ['tag' => 'Línea Comercial', 'title' => 'Neveras y Paleteras', 'color' => 'emerald', 'fallback_img' => 'categories/secundaria-1.png'],
+                            3 => ['tag' => 'Confort y Hogar', 'title' => 'Muebles para el Hogar', 'color' => 'orange', 'fallback_img' => 'categories/secundaria-2.png'],
+                            4 => ['tag' => 'Alta Conservación', 'title' => 'Vitrinas y Conservadores', 'color' => 'purple', 'fallback_img' => 'categories/secundaria-3.png'],
+                        ];
+                        $colorOptions = [
+                            'sky' => 'Azul Cielo (Gradiente)',
+                            'emerald' => 'Verde Esmeralda (Gradiente)',
+                            'orange' => 'Naranja (Gradiente)',
+                            'purple' => 'Púrpura / Violeta (Gradiente)',
+                            'rose' => 'Rosa / Carmín (Gradiente)',
+                            'navy' => 'Azul Marino / Profundo (Gradiente)',
+                            'teal' => 'Turquesa (Gradiente)',
+                            'amber' => 'Ámbar / Dorado (Gradiente)',
+                            'custom' => 'Color Personalizado (Hex o Gradiente CSS)',
+                        ];
+                    @endphp
+
+                    @for($i = 1; $i <= 4; $i++)
+                        @php
+                            $def = $defaultCards[$i];
+                            $currentColor = $settings["bento_box_{$i}_color"] ?? $def['color'];
+                            $hasCustomImg = !empty($settings["bento_box_{$i}_image"]);
+                            $currentImgUrl = $hasCustomImg 
+                                ? asset('storage/' . $settings["bento_box_{$i}_image"])
+                                : (file_exists(public_path('storage/' . $def['fallback_img'])) ? asset('storage/' . $def['fallback_img']) : null);
+                        @endphp
+                        <div x-data="{ selectedColor: '{{ $currentColor }}' }" class="p-5 bg-white rounded-xl border border-slate-200 shadow-sm space-y-4">
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                                <span class="inline-flex items-center gap-2 font-bold text-slate-800">
+                                    <span class="w-6 h-6 rounded-full bg-sky-100 text-sky-700 text-xs font-bold flex items-center justify-center">{{ $i }}</span>
+                                    Recuadro {{ $i }}
+                                </span>
+                                <span class="text-xs text-slate-400">Posición: {{ $i <= 2 ? 'Fila 1' : 'Fila 2' }}, {{ $i % 2 != 0 ? 'Columna Izq' : 'Columna Der' }}</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Etiqueta / Badge</label>
+                                    <input type="text" name="bento_box_{{ $i }}_tag" value="{{ $settings["bento_box_{$i}_tag"] ?? $def['tag'] }}" class="w-full text-sm rounded-lg border-slate-300 focus:border-sky-500 focus:ring-sky-500 shadow-sm" placeholder="Ej. Nuevas Marcas">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Título del Recuadro</label>
+                                    <input type="text" name="bento_box_{{ $i }}_title" value="{{ $settings["bento_box_{$i}_title"] ?? $def['title'] }}" class="w-full text-sm rounded-lg border-slate-300 focus:border-sky-500 focus:ring-sky-500 shadow-sm" placeholder="Ej. Congeladores Comerciales">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Color / Fondo</label>
+                                    <select name="bento_box_{{ $i }}_color" x-model="selectedColor" class="w-full text-sm rounded-lg border-slate-300 focus:border-sky-500 focus:ring-sky-500 shadow-sm">
+                                        @foreach($colorOptions as $val => $label)
+                                            <option value="{{ $val }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div x-show="selectedColor === 'custom'">
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">CSS o Hex Personalizado</label>
+                                    <input type="text" name="bento_box_{{ $i }}_custom_color" value="{{ $settings["bento_box_{$i}_custom_color"] ?? '' }}" class="w-full text-sm rounded-lg border-slate-300 focus:border-sky-500 focus:ring-sky-500 shadow-sm font-mono" placeholder="Ej. #2563eb o linear-gradient(...)">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Categoría de Destino</label>
+                                    <select name="bento_box_{{ $i }}_category_id" class="w-full text-sm rounded-lg border-slate-300 focus:border-sky-500 focus:ring-sky-500 shadow-sm">
+                                        <option value="">-- Por defecto (automático) --</option>
+                                        @foreach($categories as $category)
+                                            <option value="{{ $category->id }}" {{ ($settings["bento_box_{$i}_category_id"] ?? '') == $category->id ? 'selected' : '' }}>
+                                                {{ $category->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">O URL Personalizada (Opcional)</label>
+                                    <input type="text" name="bento_box_{{ $i }}_url" value="{{ $settings["bento_box_{$i}_url"] ?? '' }}" class="w-full text-sm rounded-lg border-slate-300 focus:border-sky-500 focus:ring-sky-500 shadow-sm" placeholder="Ej. /catalogo?marca=torrey">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Imagen del Producto (PNG sin fondo recomendado)</label>
+                                <div class="flex items-center gap-4 mt-1">
+                                    @if($currentImgUrl)
+                                        <div class="relative w-16 h-16 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center p-1 shrink-0 overflow-hidden">
+                                            <img src="{{ $currentImgUrl }}" alt="Vista previa" class="max-w-full max-h-full object-contain">
+                                        </div>
+                                    @endif
+                                    <div class="flex-1">
+                                        <input type="file" name="bento_box_{{ $i }}_image_file" accept="image/png,image/jpeg,image/webp" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer">
+                                        <p class="text-[11px] text-slate-400 mt-1">Sube una imagen para reemplazar la actual (PNG transparente de alta calidad).</p>
+                                    </div>
+                                </div>
+                                @if($hasCustomImg)
+                                    <label class="inline-flex items-center gap-2 mt-2 text-xs text-rose-600 cursor-pointer">
+                                        <input type="checkbox" name="bento_box_{{ $i }}_remove_image" value="1" class="rounded border-slate-300 text-rose-600 focus:ring-rose-500">
+                                        <span>Quitar imagen personalizada y volver a la predeterminada</span>
+                                    </label>
+                                @endif
+                            </div>
+                        </div>
+                    @endfor
                 </div>
             </div>
 

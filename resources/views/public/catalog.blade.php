@@ -63,13 +63,13 @@
                             if (!$product) continue;
 
                             // Foto de la variante (o fallback a fotos del producto/otra variante)
-                            $variantImage = $variant->media->first();
-                            if (!$variantImage && $product->variants) {
-                                $fallbackVariant = $product->variants->first(fn ($v) => $v->media->isNotEmpty());
-                                $variantImage = $fallbackVariant?->media->first();
+                            $variantImage = $variant->media?->first();
+                            if (!$variantImage && !empty($product->variants)) {
+                                $fallbackVariant = $product->variants->first(fn ($v) => !empty($v->media) && $v->media->isNotEmpty());
+                                $variantImage = $fallbackVariant?->media?->first();
                             }
-                            if (!$variantImage && $product->media) {
-                                $variantImage = $product->media->first();
+                            if (!$variantImage && !empty($product->media)) {
+                                $variantImage = $product->media?->first();
                             }
 
                             $imageUrl = $variantImage
@@ -84,7 +84,7 @@
                             $variantName = trim($variant->name ?? '');
                             $isUniqueVariant = blank($variantName)
                                 || in_array(mb_strtolower($variantName), ['única', 'unica', 'estándar', 'estandar', 'default'])
-                                || ($product->variants->count() <= 1);
+                                || (($product->variants?->count() ?? 0) <= 1);
 
                             $displayName = $isUniqueVariant
                                 ? $product->name

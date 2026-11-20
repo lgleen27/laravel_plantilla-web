@@ -43,33 +43,49 @@
 
     <!-- Lista de Categorías -->
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <span class="text-xs text-slate-500 flex items-center gap-1.5 font-medium">
+                <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path></svg>
+                Arrastra el ícono <span class="font-bold text-slate-700">≡</span> para cambiar el orden de las categorías. Se guarda automáticamente.
+            </span>
+            <div id="reorder-status" class="hidden text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 transition">
+                ¡Orden guardado! ✅
+            </div>
+        </div>
+
         <div class="overflow-x-auto w-full">
             <table class="w-full text-left border-collapse min-w-[650px]">
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600">
+                        <th class="p-4 w-12 text-center text-slate-400">≡</th>
                         <th class="p-4 whitespace-nowrap">Categoría</th>
                         <th class="p-4 text-center whitespace-nowrap">Estado</th>
                         <th class="p-4 text-center whitespace-nowrap">Métricas de Productos</th>
                         <th class="p-4 text-right whitespace-nowrap">Acciones</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
+                <tbody id="categories-sortable-list" class="divide-y divide-slate-100">
                     @forelse($categories as $category)
-                        <tr class="hover:bg-slate-50/50 transition" x-data="{ editing: false }">
+                        <tr id="category-{{ $category->id }}" class="hover:bg-slate-50/50 transition bg-white" data-id="{{ $category->id }}" x-data="{ editing: false }">
                             
+                            <!-- Drag Handle -->
+                            <td class="p-4 text-center align-middle text-slate-300 cursor-move hover:text-sky-600 drag-handle" title="Arrastra para reordenar">
+                                <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
+                            </td>
+
                             <!-- Columna: Nombre (Vista normal y Edición) -->
                             <td class="p-4 align-middle">
                                 <div x-show="!editing" class="font-medium text-slate-800">{{ $category->name }}</div>
                                 
                                 <!-- Formulario Inline de Edición -->
-                                <form x-show="editing" x-cloak action="{{ route('admin.categories.update', $category) }}" method="POST" class="flex gap-2 items-center" @submit="editing = false">
+                                <form x-show="editing" x-cloak action="{{ route('admin.categories.update', $category) }}" method="POST" class="flex gap-2 items-center flex-wrap sm:flex-nowrap" @submit="editing = false">
                                     @csrf @method('PUT')
-                                    <input type="text" name="name" value="{{ $category->name }}" required class="w-full text-sm rounded border-slate-300 focus:ring-sky-500 h-8">
-                                    <label class="flex items-center text-xs text-slate-500 gap-1 whitespace-nowrap">
+                                    <input type="text" name="name" value="{{ $category->name }}" required class="w-full text-sm rounded border-slate-300 focus:ring-sky-500 h-8" placeholder="Nombre">
+                                    <label class="flex items-center text-xs text-slate-500 gap-1 whitespace-nowrap shrink-0">
                                         <input type="checkbox" name="is_active" value="1" {{ $category->is_active ? 'checked' : '' }} class="rounded border-slate-300 text-sky-600"> Activa
                                     </label>
-                                    <button type="submit" class="p-1.5 bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></button>
-                                    <button type="button" @click="editing = false" class="p-1.5 bg-slate-100 text-slate-600 rounded hover:bg-slate-200"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                                    <button type="submit" class="p-1.5 bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200 shrink-0" title="Guardar"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></button>
+                                    <button type="button" @click="editing = false" class="p-1.5 bg-slate-100 text-slate-600 rounded hover:bg-slate-200 shrink-0" title="Cancelar"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
                                 </form>
                             </td>
 
@@ -115,19 +131,12 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="p-8 text-center text-slate-500">No hay categorías registradas o que coincidan con la búsqueda.</td>
+                            <td colspan="5" class="p-8 text-center text-slate-500">No hay categorías registradas o que coincidan con la búsqueda.</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-
-        <!-- Paginación -->
-        @if($categories->hasPages())
-            <div class="p-4 border-t border-slate-200">
-                {{ $categories->links() }}
-            </div>
-        @endif
     </div>
 
     <!-- Modal de Lupa (Inspección rápida) -->
@@ -155,4 +164,50 @@
     </div>
 
 </div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const list = document.getElementById('categories-sortable-list');
+        const statusEl = document.getElementById('reorder-status');
+
+        if (list) {
+            new Sortable(list, {
+                handle: '.drag-handle',
+                animation: 150,
+                ghostClass: 'bg-sky-50',
+                onEnd: function () {
+                    const order = [];
+                    list.querySelectorAll('tr[data-id]').forEach((row, index) => {
+                        order.push({
+                            id: row.dataset.id,
+                            position: index + 1
+                        });
+                    });
+
+                    fetch('{{ \Illuminate\Support\Facades\Route::has('admin.categories.reorder') ? route('admin.categories.reorder') : url('admin/categories/reorder') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ order: order })
+                    }).then(res => res.json())
+                      .then(data => {
+                          if (data.success) {
+                              if (statusEl) {
+                                  statusEl.classList.remove('hidden');
+                                  setTimeout(() => {
+                                      statusEl.classList.add('hidden');
+                                  }, 2500);
+                              }
+                          }
+                      });
+                }
+            });
+        }
+    });
+</script>
+@endpush
 @endsection

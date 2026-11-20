@@ -637,6 +637,315 @@ footer .brand-text small {
     line-height: 1.5;
 }
 
+/* ==========================================================================
+   Bento Grid de Categorías (Cuadrícula 2x2)
+   ========================================================================== */
+
+.categories-bento-section {
+    padding: 70px 0;
+    background: #ffffff;
+}
+
+.bento-categories-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+@media (min-width: 768px) {
+    .bento-categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+/* Tarjeta Base Uniforme */
+.bento-card {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    min-height: 200px;
+    border-radius: 16px;
+    overflow: hidden;
+    text-decoration: none;
+    color: #ffffff;
+    box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.12);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+                box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.bento-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Fondos con Degradados Suaves y Vibrantes */
+.bento-gradient-sky {
+    background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.22), transparent 50%),
+                linear-gradient(135deg, #38bdf8 0%, #0284c7 48%, #0369a1 100%);
+    box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.28);
+}
+.bento-gradient-sky:hover {
+    box-shadow: 0 18px 36px -6px rgba(2, 132, 199, 0.42);
+}
+
+.bento-gradient-emerald {
+    background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.22), transparent 50%),
+                linear-gradient(135deg, #34d399 0%, #10b981 48%, #047857 100%);
+    box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.28);
+}
+.bento-gradient-emerald:hover {
+    box-shadow: 0 18px 36px -6px rgba(16, 185, 129, 0.42);
+}
+
+.bento-gradient-orange {
+    background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.22), transparent 50%),
+                linear-gradient(135deg, #fb923c 0%, #f97316 48%, #c2410c 100%);
+    box-shadow: 0 10px 25px -5px rgba(249, 115, 22, 0.28);
+}
+.bento-gradient-orange:hover {
+    box-shadow: 0 18px 36px -6px rgba(249, 115, 22, 0.42);
+}
+
+.bento-gradient-purple {
+    background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.22), transparent 50%),
+                linear-gradient(135deg, #a855f7 0%, #7c3aed 48%, #4f46e5 100%);
+    box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.28);
+}
+.bento-gradient-purple:hover {
+    box-shadow: 0 18px 36px -6px rgba(124, 58, 237, 0.42);
+}
+
+.bento-gradient-rose {
+    background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.22), transparent 50%),
+                linear-gradient(135deg, #fb7185 0%, #e11d48 48%, #9f1239 100%);
+    box-shadow: 0 10px 25px -5px rgba(225, 29, 72, 0.28);
+}
+.bento-gradient-rose:hover {
+    box-shadow: 0 18px 36px -6px rgba(225, 29, 72, 0.42);
+}
+
+.bento-gradient-navy {
+    background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.22), transparent 50%),
+                linear-gradient(135deg, #38bdf8 0%, #1e3a8a 48%, #0f172a 100%);
+    box-shadow: 0 10px 25px -5px rgba(30, 58, 138, 0.35);
+}
+.bento-gradient-navy:hover {
+    box-shadow: 0 18px 36px -6px rgba(30, 58, 138, 0.5);
+}
+
+.bento-gradient-teal {
+    background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.22), transparent 50%),
+                linear-gradient(135deg, #2dd4bf 0%, #0d9488 48%, #115e59 100%);
+    box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.28);
+}
+.bento-gradient-teal:hover {
+    box-shadow: 0 18px 36px -6px rgba(13, 148, 136, 0.42);
+}
+
+.bento-gradient-amber {
+    background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.22), transparent 50%),
+                linear-gradient(135deg, #fbbf24 0%, #d97706 48%, #b45309 100%);
+    box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.28);
+}
+.bento-gradient-amber:hover {
+    box-shadow: 0 18px 36px -6px rgba(217, 119, 6, 0.42);
+}
+
+/* Composición Interna (Lado Izquierdo) */
+.bento-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 60%;
+    max-width: 60%;
+    padding: 24px 26px;
+    color: #ffffff;
+    text-align: left;
+}
+
+.bento-body {
+    margin-top: auto; /* Posicionado en la esquina inferior izquierda */
+}
+
+/* Etiqueta / Tag */
+.bento-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.bento-tag-sm {
+    padding: 3px 10px;
+    font-size: 0.68rem;
+    opacity: 0.95;
+}
+
+.bento-tag-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+}
+
+/* Textos Uniformes */
+.bento-title {
+    margin: 0;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: clamp(1.15rem, 1.6vw, 1.38rem);
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+/* Acciones / Botones */
+.bento-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--navy);
+    font-size: 0.84rem;
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.25s ease;
+}
+
+.bento-action svg {
+    transition: transform 0.25s ease;
+}
+
+.bento-card:hover .bento-action {
+    background: #f8fafc;
+    color: var(--blue-dark);
+}
+
+.bento-card:hover .bento-action svg {
+    transform: translateX(4px);
+}
+
+.bento-action-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    transition: gap 0.25s ease;
+}
+
+.bento-action-secondary svg {
+    transition: transform 0.25s ease;
+}
+
+.bento-card:hover .bento-action-secondary svg {
+    transform: translateX(4px);
+}
+
+/* Imagen del Producto a la Derecha */
+.bento-image-wrapper {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 45%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.bento-image {
+    max-height: 108%;
+    max-width: 100%;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.26));
+    transform: scale(1);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bento-card:hover .bento-image {
+    transform: scale(1.07);
+}
+
+/* Responsive para Celulares y Tablets */
+@media (max-width: 768px) {
+    .categories-bento-section {
+        padding: 48px 0;
+    }
+
+    .bento-card {
+        min-height: 180px;
+        max-height: 220px;
+    }
+
+    .bento-content {
+        padding: 18px 20px;
+        width: 62%;
+        max-width: 62%;
+    }
+
+    .bento-image-wrapper {
+        width: 44%;
+        right: 4px;
+    }
+
+    .bento-title {
+        font-size: 1.15rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .bento-card {
+        min-height: 175px;
+    }
+
+    .bento-content {
+        padding: 16px;
+        width: 64%;
+        max-width: 64%;
+    }
+
+    .bento-image-wrapper {
+        width: 42%;
+        right: 2px;
+    }
+
+    .bento-title {
+        font-size: 1.05rem;
+    }
+
+    .bento-tag {
+        padding: 3px 9px;
+        font-size: 0.65rem;
+    }
+}
+
 /* Product Cards */
 
 .product-grid {

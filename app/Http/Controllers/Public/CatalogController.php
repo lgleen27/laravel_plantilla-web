@@ -51,7 +51,13 @@ class CatalogController extends Controller
             $product->setRelation('primaryCategory', $product->categories->firstWhere('pivot.is_primary', true) ?? $product->categories->first());
         }
 
-        return view('public.home', compact('featuredProducts'));
+        // Categorías activas para la vista de inicio (Bento Grid)
+        $categories = Category::where('is_active', true)
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return view('public.home', compact('featuredProducts', 'categories'));
     }
 
     /**
@@ -140,23 +146,34 @@ class CatalogController extends Controller
             });
         }
 
-        $products = $query->orderBy('products.name')
-            ->orderBy('product_variants.sort_order')
-            ->orderBy('product_variants.name')
+        // Orden manual arrastrado por el usuario: primero orden de la categoría, luego orden manual del producto
+        $products = $query
+            ->orderByRaw('COALESCE((
+                SELECT categories.sort_order FROM categories 
+                INNER JOIN category_product ON category_product.category_id = categories.id 
+                WHERE category_product.product_id = products.id 
+                ORDER BY category_product.is_primary DESC, categories.sort_order ASC 
+                LIMIT 1
+            ), 999999) ASC')
+            ->orderBy('products.sort_order', 'asc')
+            ->orderBy('products.name', 'asc')
+            ->orderBy('product_variants.sort_order', 'asc')
+            ->orderBy('product_variants.name', 'asc')
             ->paginate(12)
             ->withQueryString();
 
         // Categorías para el filtro
         $categories = Category::where('is_active', true)
-            ->orderBy('name')
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('name', 'asc')
             ->get();
 
         // Cargar categoría primaria para cada producto
         foreach ($products as $variant) {
             $product = $variant->product;
             if ($product && ! $product->relationLoaded('primaryCategory')) {
-                $primaryCategory = $product->categories->firstWhere('pivot.is_primary', true)
-                    ?? $product->categories->first();
+                $primaryCategory = $product->categories?->firstWhere('pivot.is_primary', true)
+                    ?? $product->categories?->first();
                 $product->setRelation('primaryCategory', $primaryCategory);
             }
         }

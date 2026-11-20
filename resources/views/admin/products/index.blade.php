@@ -96,13 +96,13 @@
                      x-transition 
                      class="absolute left-0 mt-2 w-52 rounded-xl shadow-lg bg-white ring-1 ring-black/5 z-20 divide-y divide-slate-100 py-1"
                      style="display: none;">
-                    <a href="{{ route('admin.products.export-missing-images', ['format' => 'txt']) }}" 
+                    <a href="{{ \Illuminate\Support\Facades\Route::has('admin.products.export-missing-images') ? route('admin.products.export-missing-images', ['format' => 'txt']) : url('admin/products/export-missing-images?format=txt') }}" 
                        @click="open = false"
                        class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition">
                         <span class="px-1.5 py-0.5 text-xs font-bold bg-slate-200 text-slate-700 rounded">TXT</span>
                         <span>Descargar texto (.txt)</span>
                     </a>
-                    <a href="{{ route('admin.products.export-missing-images', ['format' => 'json']) }}" 
+                    <a href="{{ \Illuminate\Support\Facades\Route::has('admin.products.export-missing-images') ? route('admin.products.export-missing-images', ['format' => 'json']) : url('admin/products/export-missing-images?format=json') }}" 
                        @click="open = false"
                        class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition">
                         <span class="px-1.5 py-0.5 text-xs font-bold bg-amber-100 text-amber-800 rounded">JSON</span>
@@ -195,14 +195,18 @@
         </div>
         @endif
 
+        <div id="categories-sortable-list" class="space-y-4">
         @foreach($categories as $category)
             @if($category->products->count() > 0)
-            <div id="category-{{ $category->id }}" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div id="category-{{ $category->id }}" data-category-id="{{ $category->id }}" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 
                 <!-- Botón Encabezado del Acordeón -->
                 <button @click="toggle('{{ $category->id }}')" 
                         class="w-full px-6 py-4 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition">
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="category-drag-handle text-slate-300 hover:text-sky-600 cursor-move p-1 -ml-1 transition" title="Arrastra para reordenar la categoría" @click.stop>
+                            <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
+                        </span>
                         <h3 class="text-lg font-bold text-slate-800">{{ $category->name }}</h3>
                         <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700">
                             {{ $category->products->count() }} productos
@@ -287,6 +291,7 @@
             </div>
             @endif
         @endforeach
+        </div>
 
         <!-- Productos Sin Categoría (Alerta preventiva) -->
         @if($uncategorized->count() > 0)
@@ -359,7 +364,7 @@
                         });
                     });
 
-                    fetch('{{ route('admin.products.reorder') }}', {
+                    fetch('{{ \Illuminate\Support\Facades\Route::has('admin.products.reorder') ? route('admin.products.reorder') : url('admin/products/reorder') }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -370,12 +375,45 @@
                     }).then(response => response.json())
                       .then(data => {
                           if(data.success) {
-                              console.log('Orden guardado ✅');
+                              console.log('Orden de productos guardado ✅');
                           }
                       });
                 }
             });
         });
+
+        // Drag & Drop para las Categorías (Acordeones)
+        const catContainer = document.getElementById('categories-sortable-list');
+        if (catContainer) {
+            new Sortable(catContainer, {
+                handle: '.category-drag-handle',
+                animation: 150,
+                ghostClass: 'bg-sky-50',
+                onEnd: function () {
+                    const order = [];
+                    catContainer.querySelectorAll(':scope > [data-category-id]').forEach((card, index) => {
+                        order.push({
+                            id: card.getAttribute('data-category-id'),
+                            position: index + 1
+                        });
+                    });
+
+                    fetch('{{ \Illuminate\Support\Facades\Route::has('admin.categories.reorder') ? route('admin.categories.reorder') : url('admin/categories/reorder') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ order: order })
+                    }).then(r => r.json())
+                      .then(d => {
+                          if (d.success) {
+                              console.log('Orden de categorías guardado ✅');
+                          }
+                      });
+                }
+            });
+        }
     });
 </script>
 @endpush

@@ -46,6 +46,31 @@ class Category extends Model
                 );
             }
         });
+
+        static::deleted(function (Category $category): void {
+            static::recompactSortOrders();
+        });
+    }
+
+    /**
+     * Recompacta y renumerar consecutivamente (1, 2, 3...) todas las categorías sin dejar huecos.
+     */
+    public static function recompactSortOrders(): void
+    {
+        $categories = static::orderBy('sort_order', 'asc')
+            ->orderBy('id', 'asc')
+            ->get(['id', 'sort_order']);
+
+        $expectedOrder = 1;
+
+        foreach ($categories as $cat) {
+            if ($cat->sort_order !== $expectedOrder) {
+                \Illuminate\Support\Facades\DB::table('categories')
+                    ->where('id', $cat->id)
+                    ->update(['sort_order' => $expectedOrder]);
+            }
+            $expectedOrder++;
+        }
     }
 
     /**

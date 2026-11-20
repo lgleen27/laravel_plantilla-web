@@ -77,12 +77,12 @@ class ProductVariant extends Model
 
     public function getEffectiveMediaAttribute()
     {
-        if ($this->relationLoaded('media') && $this->media->isNotEmpty()) {
+        if ($this->relationLoaded('media') && $this->media && $this->media->isNotEmpty()) {
             return $this->media;
         }
 
-        if ($this->relationLoaded('product') && $this->product) {
-            $fallback = $this->product->variants->first(fn ($v) => $v->media->isNotEmpty());
+        if ($this->relationLoaded('product') && $this->product && $this->product->variants) {
+            $fallback = $this->product->variants->first(fn ($v) => !empty($v->media) && $v->media->isNotEmpty());
             if ($fallback) {
                 return $fallback->media;
             }

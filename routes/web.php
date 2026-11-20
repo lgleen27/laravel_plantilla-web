@@ -64,6 +64,9 @@ Route::middleware(['auth', 'role:super-admin|admin|editor|viewer'])
             ->middleware('permission:categories.delete')
             ->name('categories.destroy');
 
+        Route::post('categories/reorder', [CategoryController::class, 'updateOrder'])
+            ->name('categories.reorder');
+
 
 
         Route::get('products', [ProductController::class, 'index'])

@@ -96,6 +96,18 @@ class Product extends Model
                 $product->seo_description = static::generateSeoDescription($product);
             }
         });
+
+        static::deleted(function (Product $product): void {
+            if ($product->sort_order !== null) {
+                static::where('sort_order', '>', $product->sort_order)
+                    ->decrement('sort_order');
+            }
+        });
+
+        static::restored(function (Product $product): void {
+            $product->sort_order = static::nextSortOrder();
+            $product->saveQuietly();
+        });
     }
     
     /**

@@ -101,10 +101,6 @@
 
                     <div>
                         <h3>Congeladores y Refrigeración</h3>
-                        <p>
-                            Vitrinas, conservadores horizontales, congeladores para paleterías, 
-                            neveras y equipos comerciales de alto desempeño.
-                        </p>
                     </div>
                 </div>
 
@@ -141,6 +137,121 @@
         </div>
     </section>
 
+    <!-- Categorías Principales (Grid 2x2) -->
+    @php
+        $defaultBentoData = [
+            1 => ['tag' => 'Nuevas Marcas / Ofertas', 'title' => 'Congeladores Comerciales', 'color' => 'sky', 'fallback_img' => 'categories/destacada.png', 'cat_index' => 0],
+            2 => ['tag' => 'Línea Comercial', 'title' => 'Neveras y Paleteras', 'color' => 'emerald', 'fallback_img' => 'categories/secundaria-1.png', 'cat_index' => 1],
+            3 => ['tag' => 'Confort y Hogar', 'title' => 'Muebles para el Hogar', 'color' => 'orange', 'fallback_img' => 'categories/secundaria-2.png', 'cat_index' => 2],
+            4 => ['tag' => 'Alta Conservación', 'title' => 'Vitrinas y Conservadores', 'color' => 'purple', 'fallback_img' => 'categories/secundaria-3.png', 'cat_index' => 3],
+        ];
+
+        $bentoCards = [];
+        for ($i = 1; $i <= 4; $i++) {
+            $def = $defaultBentoData[$i];
+            $tag = $siteSettings["bento_box_{$i}_tag"] ?? $def['tag'];
+            
+            // Determinar categoría y enlace
+            $selectedCatId = $siteSettings["bento_box_{$i}_category_id"] ?? null;
+            $customUrl = $siteSettings["bento_box_{$i}_url"] ?? null;
+            
+            $catModel = null;
+            if (!empty($selectedCatId)) {
+                $catModel = ($categories ?? collect())->firstWhere('id', $selectedCatId);
+            }
+            if (!$catModel) {
+                $catModel = ($categories ?? collect())->get($def['cat_index']);
+            }
+
+            $title = $siteSettings["bento_box_{$i}_title"] ?? ($catModel?->name ?? $def['title']);
+
+            if (!empty($customUrl)) {
+                $link = $customUrl;
+            } elseif ($catModel) {
+                $link = route('public.catalog', ['category' => $catModel->id]);
+            } else {
+                $link = route('public.catalog');
+            }
+
+            // Color / Gradiente
+            $colorPreset = $siteSettings["bento_box_{$i}_color"] ?? $def['color'];
+            $customColor = $siteSettings["bento_box_{$i}_custom_color"] ?? null;
+            $colorClass = 'bento-gradient-' . $colorPreset;
+            $customStyle = '';
+
+            if ($colorPreset === 'custom' && !empty($customColor)) {
+                $colorClass = '';
+                $customStyle = 'background: ' . $customColor . ';';
+            }
+
+            // Imagen
+            $customImg = $siteSettings["bento_box_{$i}_image"] ?? null;
+            if (!empty($customImg) && file_exists(public_path('storage/' . $customImg))) {
+                $image = asset('storage/' . $customImg);
+            } elseif (file_exists(public_path('storage/' . $def['fallback_img']))) {
+                $image = asset('storage/' . $def['fallback_img']);
+            } else {
+                $image = asset('storage/products/' . ($i == 1 ? '1.jpg' : ($i == 2 ? '01.jpg' : ($i == 3 ? '10.jpg' : '02.jpg'))));
+            }
+
+            $bentoCards[] = [
+                'tag' => $tag,
+                'title' => $title,
+                'link' => $link,
+                'image' => $image,
+                'class' => $colorClass,
+                'style' => $customStyle,
+            ];
+        }
+
+        $bentoHeading = $siteSettings['bento_section_title'] ?? 'Explora por Categorías ❄';
+        $bentoSubtitle = $siteSettings['bento_section_subtitle'] ?? 'Descubre nuestra gama de congelación comercial y mobiliario diseñados para negocios exigentes y para el hogar.';
+    @endphp
+
+    <section class="section categories-bento-section">
+        <div class="container">
+            <div class="section-heading">
+                <h2>{{ $bentoHeading }}</h2>
+                <p>
+                    {{ $bentoSubtitle }}
+                </p>
+            </div>
+
+            <div class="bento-categories-grid">
+                @foreach($bentoCards as $card)
+                    <a href="{{ $card['link'] }}" class="bento-card {{ $card['class'] }}" @if(!empty($card['style'])) style="{{ $card['style'] }}" @endif>
+                        <div class="bento-content">
+                            <div class="bento-header">
+                                @if(!empty($card['tag']))
+                                    <span class="bento-tag {{ $loop->first ? '' : 'bento-tag-sm' }}">
+                                        @if($loop->first)
+                                            <span class="bento-tag-dot"></span>
+                                        @endif
+                                        {{ $card['tag'] }}
+                                    </span>
+                                @endif
+                            </div>
+
+                            <div class="bento-body">
+                                <h3 class="bento-title">{{ $card['title'] }}</h3>
+                                <span class="bento-action-secondary">
+                                    Explorar categoría
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="bento-image-wrapper">
+                            <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}" class="bento-image" loading="lazy" decoding="async">
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
     <!-- Productos Destacados -->
     @if($featuredProducts->count())
         <section class="section section-soft">
@@ -155,8 +266,8 @@
                 <div class="product-grid">
                     @foreach($featuredProducts as $product)
                         @php
-                            $firstVariant = $product->variants->first(fn ($v) => $v->media->isNotEmpty()) ?? $product->variants->first();
-                            $firstImage = $firstVariant?->media->first();
+                            $firstVariant = $product->variants?->first(fn ($v) => !empty($v->media) && $v->media->isNotEmpty()) ?? $product->variants?->first();
+                            $firstImage = $firstVariant?->media?->first();
 
                             $price = $firstVariant?->price ?? $product->price;
                             $hasPrice = $price !== null && $price > 0;

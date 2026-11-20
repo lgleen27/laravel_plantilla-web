@@ -25,6 +25,7 @@ class StoreProductRequest extends FormRequest
             ],
             'status' => ['required', Rule::in(['draft', 'active', 'inactive'])],
             'is_featured' => ['required', 'boolean'],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
             'origin_category' => ['nullable'],
             'return_search' => ['nullable', 'string'],
             

@@ -13,6 +13,11 @@ class CategoryController extends Controller
 {
     public function index(Request $request): View
     {
+        // Asegurar que la lista esté completa sin huecos intermedios ni números repetidos
+        if (!$request->filled('search')) {
+            Category::recompactSortOrders();
+        }
+
         $query = Category::query()
             ->withCount([
                 'products as total_products',
@@ -27,15 +32,35 @@ class CategoryController extends Controller
             ->with(['products' => function($q) {
                 $q->select('products.id', 'name', 'status')->take(10); 
             }])
-            ->orderBy('name');
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('name', 'asc');
 
         if ($request->has('search') && $request->search != '') {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        $categories = $query->paginate(15)->appends($request->all());
+        // Obtenemos todas para permitir Drag & Drop completo sin cortes de paginación
+        $categories = $query->get();
 
         return view('admin.categories.index', compact('categories'));
+    }
+
+    /**
+     * Reordenamiento dinámico por Drag & Drop
+     */
+    public function updateOrder(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            'order' => 'required|array',
+            'order.*.id' => 'required|exists:categories,id',
+            'order.*.position' => 'required|integer',
+        ]);
+
+        foreach ($request->order as $item) {
+            Category::where('id', $item['id'])->update(['sort_order' => $item['position']]);
+        }
+
+        return response()->json(['success' => true]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -60,13 +85,15 @@ class CategoryController extends Controller
             return back()->withInput()->withErrors(['name' => 'Ya existe una categoría con este nombre.']);
         }
 
-        Category::create([
-            'name' => $validated['name'],
-            'slug' => $slug,
-            'is_active' => $request->boolean('is_active'),
-            'parent_id' => null, // Todas son principales
-            'sort_order' => (Category::max('sort_order') ?? 0) + 1,
-        ]);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $slug, $request) {
+            Category::create([
+                'name' => $validated['name'],
+                'slug' => $slug,
+                'is_active' => $request->boolean('is_active'),
+                'parent_id' => null, // Todas son principales
+                'sort_order' => (Category::max('sort_order') ?? 0) + 1,
+            ]);
+        });
 
         return redirect()->route('admin.categories.index')->with('success', 'Categoría creada correctamente.');
     }
@@ -94,11 +121,13 @@ class CategoryController extends Controller
             return back()->withInput()->withErrors(['name' => 'Ya existe otra categoría con este nombre.']);
         }
 
-        $category->update([
-            'name' => $validated['name'],
-            'slug' => $slug,
-            'is_active' => $request->boolean('is_active'),
-        ]);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($category, $validated, $slug, $request) {
+            $category->update([
+                'name' => $validated['name'],
+                'slug' => $slug,
+                'is_active' => $request->boolean('is_active'),
+            ]);
+        });
 
         return redirect()->route('admin.categories.index')->with('success', 'Categoría actualizada.');
     }
@@ -110,9 +139,12 @@ class CategoryController extends Controller
                 ->with('error', 'No puedes eliminar esta categoría porque tiene productos asignados.');
         }
 
-        // Borrado definitivo físico de la base de datos (Hard Delete)
-        $category->delete();
+        // Borrado definitivo físico de la base de datos (Hard Delete) y reacomodo automático
+        \Illuminate\Support\Facades\DB::transaction(function () use ($category) {
+            $category->delete();
+            Category::recompactSortOrders();
+        });
 
-        return redirect()->route('admin.categories.index')->with('success', 'Categoría eliminada definitivamente.');
+        return redirect()->route('admin.categories.index')->with('success', 'Categoría eliminada y lista de orden reacomodada.');
     }
 }
